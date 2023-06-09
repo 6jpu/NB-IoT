@@ -56,7 +56,8 @@ int socket_connect(socket_t *sock)
     struct  addrinfo    *res;     //定义函数返回的结构体链表的指针
     struct  addrinfo    *readIP;    //定义一个遍历链表的指针
 	struct  sockaddr_in *addr;
-	
+	struct  in_addr      inaddr;
+
 	
 	/* DNS */
     memset(&hints, 0, sizeof(hints));   //将存放信息的结构体清零
@@ -64,7 +65,15 @@ int socket_connect(socket_t *sock)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_family = AF_INET;
     hints.ai_protocol = 0;
-	
+
+
+    /* If $host is a valid IP address, then don't use name resolution */
+    if( inet_aton(sock->host, &inaddr) )
+    {
+        //log_info("%s is a valid IP address, don't use domain name resolution.\n", sock->host);
+        hints.ai_flags |= AI_NUMERICHOST;
+    }
+
 	get_back = getaddrinfo(sock->host, NULL, &hints, &res); // 调用函数
     if (get_back != 0)   //如果函数调用失败
     {
@@ -82,7 +91,8 @@ int socket_connect(socket_t *sock)
 		if (sock->fd < 0)
 		{
 			PARSE_LOG_ERROR("Create socket failure : %s\n", strerror(errno));
-			return -1;
+			rv =  -1;
+			goto CleanUp;
 		}
 		PARSE_LOG_INFO("Create socket[%d] successfully!\n", sock->fd);
 
@@ -105,7 +115,9 @@ int socket_connect(socket_t *sock)
 		}
 				
 	}
-    freeaddrinfo(res);  //释放getaddrinfo函数调用动态获取的空间
+   
+CleanUp:	
+	freeaddrinfo(res);  //释放getaddrinfo函数调用动态获取的空间
 	
 
 	return rv;
