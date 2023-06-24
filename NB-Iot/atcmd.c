@@ -255,7 +255,7 @@ int atcmd_cereg(comport_t *comport)
 	if ( !strstr(buf, "0,1") )
 	{
 		printf ("Network not registered!\n");
-		return 1;
+		return -4;
 	}
 
 	printf ("AT+CEREG?:%s\n", buf);
@@ -294,7 +294,7 @@ int atcmd_cgatt(comport_t *comport)
 	if ( strstr(buf, "0") )
 	{
 		printf ("Detached\n");
-		return 1;
+		return -4;
 	}
 
 	printf ("AT+CGATT?:%s\n", buf);
@@ -622,7 +622,7 @@ int atcmd_qlwuldataex(comport_t *comport, char *data)
         return -1; 
     }   
 
-	snprintf(cmd, sizeof(cmd), "AT+QLWULDATEX=%s,0x0100", data);
+	snprintf(cmd, sizeof(cmd), "AT+QLWULDATEX=%s,0x0100\r\n", data);
     rv = send_atcmd(comport, cmd, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
@@ -636,7 +636,7 @@ int atcmd_qlwuldataex(comport_t *comport, char *data)
         return -3; 
     }
 
-	printf ("%s:%s\n", cmd, data);
+	printf ("%s:%s\n", cmd, buf);
 
 	return 0;
 }
@@ -673,6 +673,128 @@ int atcmd_ate(comport_t *comport, int flag)
     if ( !strstr(buf, "OK") )
     {   
         printf ("Set echo error!\n");
+        return -3; 
+    }
+
+	printf ("%s:%s\n", cmd, buf);
+
+	return 0;
+}
+
+/*  设置模块联网模式 
+ *  flag=0 设置手动联网
+ *  flag=0 设置自动联网
+ *  成功返回0，出错返回负数
+ *  */
+int atcmd_nconfig(comport_t *comport, int flag)
+{
+    int   rv; 
+    char  buf[40];
+	char  cmd[33];
+
+    if ( !comport )
+    {   
+        printf ("atcmd_nconfig parameter error!\n");
+        return -1; 
+    }  
+	if (flag == 0)
+	{
+		strcpy(cmd, "AT+NCONFIG=AUTOCONNECT,FALSE\r\n");
+	}
+	else 
+	{
+		strcpy(cmd, "AT+NCONFIG=AUTOCONNECT,TRUE\r\n");
+	}
+
+
+    rv = send_atcmd(comport, cmd, buf, sizeof(buf),  TIMEOUT);
+    if (rv < 0)
+    {   
+        printf ("send_atcmd:%s error!\n", cmd);
+        return -2; 
+    }   
+
+    if ( !strstr(buf, "OK") )
+    {   
+        printf ("Configure UE behaviour error!\n");
+        return -3; 
+    }
+
+	printf ("%s:%s\n", cmd, buf);
+
+	return 0;
+}
+
+/*  模块射频开关 
+ *  flag=0 关闭射频模块
+ *  flag=0 打开射频模块
+ *  成功返回0，出错返回负数
+ *  */
+int atcmd_cfun(comport_t *comport, int flag)
+{
+    int   rv; 
+    char  buf[16];
+	char  cmd[16];
+
+    if ( !comport )
+    {   
+        printf ("atcmd_cfun parameter error!\n");
+        return -1; 
+    }  
+	if (flag == 0)
+	{
+		strcpy(cmd, "AT+CFUN=0\r\n");
+	}
+	else 
+	{
+		strcpy(cmd, "AT+CFUN=1\r\n");
+	}
+
+
+    rv = send_atcmd(comport, cmd, buf, sizeof(buf),  TIMEOUT);
+    if (rv < 0)
+    {   
+        printf ("send_atcmd:%s error!\n", cmd);
+        return -2; 
+    }   
+
+    if ( !strstr(buf, "OK") )
+    {   
+        printf ("Set UE functionality error!\n");
+        return -3; 
+    }
+
+	printf ("%s:%s\n", cmd, buf);
+
+	return 0;
+}
+/*  设置模块的工作频段 
+ *  例：atcmd_nband(&comport, "5,8");
+ *  成功返回0，出错返回负数
+ *  */
+int atcmd_nband(comport_t *comport, char *band)
+{
+    int   rv; 
+    char  buf[32];
+	char  cmd[16];
+
+    if ( !comport && !band )
+    {   
+        printf ("atcmd_nband parameter error!\n");
+        return -1; 
+    }   
+
+	snprintf(cmd, sizeof(cmd), "AT+NBAND=%s\r\n", band);
+    rv = send_atcmd(comport, cmd, buf, sizeof(buf),  TIMEOUT);
+    if (rv < 0)
+    {   
+        printf ("send_atcmd:%s error!\n", cmd);
+        return -2; 
+    }   
+
+    if ( !strstr(buf, "OK") )
+    {   
+        printf ("Set supported bands error!\n");
         return -3; 
     }
 

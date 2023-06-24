@@ -80,4 +80,14 @@ int atcmd_qlwuldataex(comport_t *comport, char *data);
 /* 设置回显 */
 int atcmd_ate(comport_t *comport, int flag);
 
+/* 设置模块联网模式 */
+int atcmd_nconfig(comport_t *comport, int flag);
+
+/* 模块射频开关 */
+int atcmd_cfun(comport_t *comport, int flag);
+
+/* 设置模块的工作频段 */
+int atcmd_nband(comport_t *comport, char *band);
+
+
 #endif
