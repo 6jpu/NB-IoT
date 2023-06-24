@@ -38,6 +38,9 @@ int str_fetch(char *fetched, int size, const char *src, const char *start, const
 /* 查看 AT 命令通信是否正常 */
 int atcmd_at(comport_t *comport);
 
+/* 重启模块 */
+int atcmd_nrb(comport_t *comport);
+
 /* 查询信号强度 */
 int atcmd_csq(comport_t *comport);
 

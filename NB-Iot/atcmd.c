@@ -145,6 +145,36 @@ int atcmd_at(comport_t *comport)
 	return 0;
 }
 
+/*  重启模块 */
+int atcmd_nrb(comport_t *comport)
+{	
+	int   rv;
+	char  buf[128];
+
+	if ( !comport )
+	{
+		printf ("atcmd_nrb parameter error!\n");
+		return -1;
+	}
+
+	rv = send_atcmd(comport, "AT+NRB\r\n", buf, sizeof(buf),  TIMEOUT);
+	if (rv < 0)
+	{
+		printf ("send_atcmd:AT+NRB error!\n");
+		return -2;
+	}
+
+	if ( !strstr(buf, "OK") )
+	{
+		printf ("Reboot error!\n");
+		return -3;
+	}
+
+	printf ("AT:%s\n", buf);
+
+	return 0;
+}
+
 /*  查询信号强度
  *  信号正常返回0,出错返回负数
  *  */
