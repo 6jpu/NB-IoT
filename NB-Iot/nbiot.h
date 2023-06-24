@@ -16,7 +16,11 @@
 
 #include "atcmd.h"
 
+/* 检查NB模块的网络附着情况 */
 int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot);
+
+/* 连接云平台 */
+int nbiot_connect_cloud(comport_t *comport, char *ip , char *port);
 
 
 #endif
