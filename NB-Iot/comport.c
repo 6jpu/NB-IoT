@@ -290,3 +290,5 @@ int comport_recv(comport_t *comport, char *buf, int size, int timeout)
 		return rv;
 	}
 }
+
+

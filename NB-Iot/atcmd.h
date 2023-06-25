@@ -56,6 +56,9 @@ int atcmd_cgatt1(comport_t *comport);
 /* 查询模块IP地址 */
 int atcmd_cgpaddr(comport_t *comport);
 
+/* 查询在云平台注册情况 */
+int atcmd_nmstatus(comport_t *comport);
+
 /* 设置云平台IP和端口 */
 int atcmd_ncdp(comport_t *comport, char *ip, char *port);
 
@@ -85,6 +88,12 @@ int atcmd_nconfig(comport_t *comport, int flag);
 
 /* 模块射频开关 */
 int atcmd_cfun(comport_t *comport, int flag);
+
+/* 设置模块连接云平台模式 */
+int atcmd_qregswt(comport_t *comport, int flag);
+
+/* 注册云平台 */
+int atcmd_qlwsregind(comport_t *comport, int flag);
 
 /* 设置模块的工作频段 */
 int atcmd_nband(comport_t *comport, char *band);

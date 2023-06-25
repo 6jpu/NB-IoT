@@ -366,6 +366,42 @@ int atcmd_cgpaddr(comport_t *comport)
 	return 0;
 }
 
+/* 查询在云平台注册情况 */
+int atcmd_nmstatus(comport_t *comport)
+{
+    int   rv;
+	char  buf[64];
+
+	if ( !comport )
+	{
+		printf ("atcmd_nmstatus parameter error!\n");
+		return -1;
+	}
+
+	rv = send_atcmd(comport, "AT+NMSTATUS?\r\n", buf, sizeof(buf),  TIMEOUT);
+	if (rv < 0)
+	{
+		printf ("send_atcmd:AT+NMSTATUS? error!\n");
+		return -2;
+	}
+
+	if ( !strstr(buf, "OK") )
+	{
+		printf ("Message registration status error!\n");
+		return -3;
+	}
+
+	if ( !strstr(buf, "MO_DATA_ENABLED"))
+	{
+		printf ("Register failed!\n");
+		return -4;
+	}
+
+	printf ("AT:%s\n", buf);
+
+	return 0;
+}
+
 /*  设置云平台IP和端口 
  *  成功返回0，出错返回负数
  *  */
@@ -768,6 +804,95 @@ int atcmd_cfun(comport_t *comport, int flag)
 
 	return 0;
 }
+
+
+/* 设置模块连接云平台模式 
+ * flag=0,通过 AT+QLWSREGIND 命令手动触发连接云平台
+ * flag=1,自动连接云平台
+ * 成功返回0，出错返回负数
+ * */
+int atcmd_qregswt(comport_t *comport, int flag)
+{
+    int   rv; 
+    char  buf[64];
+	char  cmd[16];
+
+    if ( !comport )
+    {   
+        printf ("atcmd_qregswt parameter error!\n");
+        return -1; 
+    }  
+	if (flag == 0)
+	{
+		strcpy(cmd, "AT+QREGSWT=0\r\n");
+	}
+	else 
+	{
+		strcpy(cmd, "AT+QREGSWT=1\r\n");
+	}
+
+    rv = send_atcmd(comport, cmd, buf, sizeof(buf),  TIMEOUT);
+    if (rv < 0)
+    {   
+        printf ("send_atcmd:%s error!\n", cmd);
+        return -2; 
+    }   
+
+    if ( !strstr(buf, "OK") )
+    {   
+        printf ("Set registration mode error!\n");
+        return -3; 
+    }
+
+	printf ("%s:%s\n", cmd, buf);
+
+	return 0;
+}
+
+/* 注册云平台 
+ * flag=0,开始注册云平台
+ * flag=1,撤销注册
+ * 成功返回0，出错返回负数
+ * */
+int atcmd_qlwsregind(comport_t *comport, int flag)
+{
+    int   rv; 
+    char  buf[64];
+	char  cmd[32];
+
+    if ( !comport )
+    {   
+        printf ("atcmd_qlwsregind parameter error!\n");
+        return -1; 
+    }  
+	if (flag == 0)
+	{
+		strcpy(cmd, "AT+QLWSREGIND=0\r\n");
+	}
+	else 
+	{
+		strcpy(cmd, "AT+QLWSREGIND=1\r\n");
+	}
+
+
+    rv = send_atcmd(comport, cmd, buf, sizeof(buf),  TIMEOUT);
+    if (rv < 0)
+    {   
+        printf ("send_atcmd:%s error!\n", cmd);
+        return -2; 
+    }   
+
+    if ( !strstr(buf, "OK") )
+    {   
+        printf ("Register control error!\n");
+        return -3; 
+    }
+
+	printf ("%s:%s\n", cmd, buf);
+
+	return 0;
+}
+
 /*  设置模块的工作频段 
  *  例：atcmd_nband(&comport, "5,8");
  *  成功返回0，出错返回负数
