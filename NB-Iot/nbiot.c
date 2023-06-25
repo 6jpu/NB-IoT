@@ -11,14 +11,15 @@
  *                 
  ********************************************************************************/
 
+#include <stdio.h>
 #include "nbiot.h"
 
 /* 检查NB模块的网络附着情况 */
-int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
+int nbiot_attach_check(comport_t *comport)
 {
 	int    rv;
 
-	rv = atcmd_at(comport)
+	rv = atcmd_at(comport);
 	if ( rv < 0 )
 	{
 		printf ("atcmd_at error!\n");
@@ -34,15 +35,23 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
 	}
  
 	/* 设置手动联网 */
-    rv = atcmd_nconfig(comport, 0)
+    rv = atcmd_nconfig(comport, 0);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_nconfig_0 error!\n");
         return -3; 
     }   
 
+	/* 设置手动连接云平台 */
+    rv = atcmd_qregswt(comport, 0);
+    if ( rv < 0 ) 
+    {   
+        printf ("atcmd_qregswt_0 error!\n");
+        return -3; 
+    }
+
 	/* 重启模块 */
-    rv = atcmd_nrb(comport)
+    rv = atcmd_nrb(comport);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_nrb error!\n");
@@ -50,7 +59,7 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
     }
 
 	/* 关闭射频 */
-    rv = atcmd_cfun(comport, 0)
+    rv = atcmd_cfun(comport, 0);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cfun_0 error!\n");
@@ -58,7 +67,7 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
     }   
 
 	/* 设置相应频段 */
-    rv = atcmd_nband(comport, "5,8")
+    rv = atcmd_nband(comport, "5,8");
     if ( rv < 0 ) 
     {   
 		printf ("atcmd_nband error!\n");
@@ -66,7 +75,7 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
     } 
   
 	/*  打开射频 */ 
-	rv = atcmd_cfun(comport, 0)
+	rv = atcmd_cfun(comport, 0);
 	if ( rv < 0 )
 	{
 		printf ("atcmd_cfun_1 error!\n");
@@ -74,7 +83,7 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
 	}
 
 	/* 查询信号强度 */
-	rv = atcmd_csq(comport)
+	rv = atcmd_csq(comport);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_csq error!\n");
@@ -82,7 +91,7 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
     }
 
 	/* 附着网络 */
-    rv = atcmd_cgatt1(comport)
+    rv = atcmd_cgatt1(comport);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cgatt1 error!\n");
@@ -90,15 +99,15 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
     }
 
 	/* 查询网络注册状态 */
-    rv = atcmd_cgreg(comport)
+    rv = atcmd_cereg(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_cgreg error!\n");
+        printf ("atcmd_cereg error!\n");
 		return -10;
     }
 
 	/* 查询模块附着网络状态 */
-    rv = atcmd_cgatt(comport)
+    rv = atcmd_cgatt(comport);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cgatt error!\n");
@@ -106,7 +115,7 @@ int nbiot_attach_check(comport_t *comport, nbiot_info_t *nbiot)
     }
 
 	/* 查询模块获取到的 IP 地址 */
-    rv = atcmd_cgpaddr(comport)
+    rv = atcmd_cgpaddr(comport);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cgpaddr error!\n");
@@ -125,9 +134,23 @@ int nbiot_connect_cloud(comport_t *comport, char *ip , char *port)
     rv = atcmd_ncdp(comport, ip, port);
     if( rv < 0 )
     {
-        printf("atcmd ncdp is failure ...\n");
+        printf("atcmd_ncdp error!\n");
         return -1;
     }
+
+	/* 开始注册 */
+    rv = atcmd_qlwsregind(comport, 0);
+    if ( rv < 0 ) 
+    {   
+        printf ("atcmd_qlwsregind_0 error!\n");
+        return -3; 
+    }   
  
+    rv = atcmd_nmstatus(comport);
+    if ( rv < 0 ) 
+    {   
+        printf ("atcmd_nmstatus error!\n");
+        return -3; 
+    }   
     return 0;
 }
