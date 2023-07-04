@@ -22,37 +22,58 @@
 #include <errno.h>
 #include "comport.h"
 
-int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
+#define CONFIG_PRINT_STDOUT
+
+#if ( defined CONFIG_PRINT_STDOUT )
+#define dbg_print(format,args...) printf(format, ##args)
+
+#else
+#define dbg_print(format,args...) do{} while(0);
+#endif
+
+int comport_open(comport_t *comport, char *devname, long baudrate, const char *conf)
 {
 	struct termios oldtio;
 	struct termios newtio;
 	speed_t speed;
 
+    if( !comport || !devname )
+    {
+        dbg_print("invalid input arugments\n");
+        return -1;
+    }
 
-	/*  初始化串口结构体 */
+	/* 初始化串口结构体*/
+	memset(comport, 0, sizeof(*comport));
 	strncpy(comport->devname, devname, sizeof(comport->devname));
 	comport->baudrate = baudrate;
+	comport->fragsize = CONFIG_DEF_FRAGSIZE;
 	comport->dbit = conf[0];
 	comport->parity = conf[1];
 	comport->sbit = conf[2];
-    comport->fd = open(devname, O_RDWR | O_NONBLOCK);    
-/* 
-	printf ("%d\n",comport->baudrate);
-	printf ("%c\n",comport->dbit);
-	printf ("%c\n",comport->parity);
-	printf ("%c\n",comport->sbit);
-	printf ("%s\n",comport->devname);
-*/
-	if (0 > comport->fd) 
-    {   
-        printf("fail to open uart file\n");
-        return -1; 
-    }   
 
+#if 0
+	dbg_print("%d\n",comport->baudrate);
+	dbg_print("%c\n",comport->dbit);
+	dbg_print("%c\n",comport->parity);
+	dbg_print("%c\n",comport->sbit);
+	dbg_print("%s\n",comport->devname);
+#endif
+
+    if( !strstr(comport->devname, "tty") )
+    {
+        dbg_print("comport device \"%s\" is not tty device\n", comport->devname);
+        return -2;
+    }
+    comport->fd = open(devname, O_RDWR | O_NOCTTY | O_NONBLOCK);    
+	if (comport->fd < 0)
+	{
+		dbg_print("comport open \"%s\" failed:%s\n", comport->devname, strerror(errno));
+	}
     /* 获取串口当前的配置参数 */
     if (0 > tcgetattr(comport->fd, &oldtio)) 
     {   
-        printf("fail to get old attribution of terminal\n");
+        dbg_print("fail to get old attribution of terminal\n");
         close(comport->fd);
         return -2; 
     }
@@ -107,14 +128,14 @@ int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
             break;
         default:
             speed = B115200;
-            printf("default baud rate is 115200\n");
+            dbg_print("default baud rate is 115200\n");
             break;
     }
 
     /* cfsetspeed 函数，设置波特率 */
     if (0 > cfsetspeed(&newtio, speed))
     {
-        printf("fail to set baud rate of uart\n");
+        dbg_print("fail to set baud rate of uart\n");
         return -3;
     }
 
@@ -139,7 +160,7 @@ int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
             break;
         default:
             newtio.c_cflag |= CS8;
-            printf("default data bit size is 8\n");
+            dbg_print("default data bit size is 8\n");
             break;
     }
 
@@ -151,14 +172,17 @@ int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
     switch (comport->parity)
     {
         case 'N':   //无校验
+		case 'n':
             newtio.c_cflag &= ~PARENB;
             newtio.c_iflag &= ~INPCK;
             break;
         case 'O':   //奇校验
+		case 'o':
             newtio.c_cflag |= (PARODD | PARENB);
             newtio.c_iflag |= INPCK;
             break;
         case 'E':   //偶校验
+		case 'e':
             newtio.c_cflag |= PARENB;
             newtio.c_cflag &= ~PARODD;
             newtio.c_iflag |= INPCK;
@@ -166,7 +190,7 @@ int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
         default:    //默认配置为无校验
             newtio.c_cflag &= ~PARENB;
             newtio.c_iflag &= ~INPCK;
-            printf("default parity is N (no check)\n");
+            dbg_print("default parity is N (no check)\n");
             break;
     }
 
@@ -183,7 +207,7 @@ int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
             break;
         default:    //默认配置为1个停止位
             newtio.c_cflag &= ~CSTOPB;
-            printf("default stop bit size is 1\n");
+            dbg_print("default stop bit size is 1\n");
             break;
     }
 
@@ -196,21 +220,21 @@ int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
     /* 清空输入输出缓冲区 */
     if (0 > tcflush(comport->fd, TCIOFLUSH))
     {
-        printf("fail to flush the buffer\n");
+        dbg_print("fail to flush the buffer\n");
         return -4;
     }
 
     /* 写入配置，使配置生效 */
     if (0 > tcsetattr(comport->fd, TCSANOW, &newtio))
     {
-        printf("fail to flush the buffer\n");
+        dbg_print("fail to flush the buffer\n");
         return -5;
     }
 
     /* 写入配置，使配置生效 */
     if (0 > tcsetattr(comport->fd, TCSANOW, &newtio))
     {
-        printf("fail to set new attribution of terminal\n");
+        dbg_print("fail to set new attribution of terminal\n");
         return -6;
     }
 
@@ -220,75 +244,140 @@ int comport_open(comport_t *comport, char *devname, long baudrate, char *conf)
 
 int comport_close(comport_t *comport)
 {
+    if( !comport )
+    {
+        dbg_print("invalid input arugments\n");
+        return -1;
+    }
+
 	struct termios oldtio;
 
 	tcsetattr(comport->fd, TCSANOW, &oldtio);
-	close(comport->fd);
+	if (comport->fd >= 0)
+	{
+		close(comport->fd);
+	}
 	comport->fd = -1;
 
 	return 0;
 }
 
-int comport_send(comport_t *comport, char *data, int bytes)
+int comport_send(comport_t *comport, char *data, int data_bytes)
 {
-	int    rv = -1;
-	fd_set wfds;
+	int    rv = 0;
+	int	   left;
+	int    bytes = 0;
+	char  *ptr;
 
-	FD_ZERO(&wfds);
-	FD_SET(comport->fd, &wfds);
+    if( !comport || !data || data_bytes<=0 )
+    {
+        dbg_print("invalid input arugments\n");
+        return -1;
+    }
 
-	rv = select(comport->fd+1, NULL, &wfds, NULL, NULL);
-	if (rv < 0)
+    if( comport->fd < 0 )
+    {
+        dbg_print("Serail port not opened\n");
+        return -2;
+    }
+
+	ptr = data;
+	left = data_bytes;
+
+	while(left > 0)
 	{
-		printf("select failure :%s\n",strerror(errno));
-		return -1;
+		bytes = left>comport->fragsize ? comport->fragsize : left;
+
+		rv = write(comport->fd, ptr, bytes);
+		if (rv < 0)
+		{
+			dbg_print("write to comport failure:%s\n", strerror(errno));
+			rv = -3;
+			break;
+		}
+
+		left -= rv;
+		ptr += rv;
 	}
 
-	rv = write(comport->fd, data, bytes);
-	if (rv < 0)
-	{
-		printf ("write to comport failure:%s\n",strerror(errno));
-		return -2;
-	}
-
-	return 0;
+	return rv;
 }
 
 int comport_recv(comport_t *comport, char *buf, int size, int timeout)
 {
-	//printf ("1\n");
-	int            rv = -1;
-	fd_set         rfds;
-	struct timeval tv;
+	int            rv = 0;
+	int            ret;
+	int            bytes = 0;
+	fd_set         rfds,exfds;
+	struct timeval tv, *tv_ptr=NULL;
+
+    if ( !comport || !buf || size<=0 )
+    {
+        dbg_print("invalid input arugments\n");
+        return -1;
+    }
+
+    if ( comport->fd < 0 )
+    {
+        dbg_print("Serail port not opened\n");
+        return -2;
+    }
+
+	dbg_print("into comport_recv\n");
 
 	FD_ZERO(&rfds);
+	FD_ZERO(&exfds);
 	FD_SET(comport->fd, &rfds);
-	tv.tv_sec = timeout;
-	tv.tv_usec = 0;
+	FD_SET(comport->fd, &exfds);
 
-	rv = select(comport->fd+1, &rfds, NULL, NULL, &tv);
-	if (rv < 0)
+	if( TIMEOUT_NONE != timeout )
 	{
-		printf("select failure :%s\n",strerror(errno));
-		return rv;
+		tv.tv_sec = (time_t) (timeout / 1000);
+		tv.tv_usec = (long)(1000 * (timeout % 1000));
+		tv_ptr = &tv;
 	}
-	else if (rv == 0)
+
+	memset(buf, 0, size);
+
+	while(1)
 	{
-		printf ("comport receive timeout!\n");
-		return rv;
-	}
-	else
-	{
-		//printf ("read 1\n");
-		rv = read(comport->fd, buf, size);
-		//printf ("read rv:%d\n",rv);
-		if(rv < 0)
+		ret = select(comport->fd+1, &rfds, NULL, &exfds, tv_ptr);
+		if (ret < 0)
 		{
-			printf ("read from comport failure:%s\n",strerror(errno));
-			return -3;
+			/* EINTR means catch interrupt signal ,not real error*/
+			dbg_print("select failure :%s\n", strerror(errno));
+			rv = EINTR==errno ? 0 : -3;
+			break;
 		}
-		return rv;
+		else if (ret == 0)/* timeout */
+		{
+			break;
+		}
+			
+		ret = read(comport->fd, buf+bytes, size-bytes);
+		if(ret <= 0)
+		{
+			dbg_print("read from comport failure:%s\n", strerror(errno));
+			break;
+		}
+
+		bytes += ret;
+		if (bytes >= size )
+			break;
+
+		/* try to read data in 10ms again, if no data arrive it will break */
+		tv.tv_sec = 0;
+		tv.tv_usec = 10000;
+		tv_ptr = &tv;
 	}
+
+	if ( !rv )
+		rv = bytes;
+	
+	dbg_print("read:%s\n", buf);
+
+	return rv;
+
 }
 
 

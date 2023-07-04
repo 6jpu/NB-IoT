@@ -14,13 +14,13 @@
 #ifndef  _NBIOT_H_
 #define  _NBIOT_H_
 
-#include "atcmd.h"
+#include "bc28.h"
 
 /* 检查NB模块的网络附着情况 */
-int nbiot_attach_check(comport_t *comport);
+extern int nbiot_attach_check(comport_t *comport);
 
 /* 连接云平台 */
-int nbiot_connect_cloud(comport_t *comport, char *ip , char *port);
+extern int nbiot_connect_cloud(comport_t *comport, char *ip , char *port);
 
 
 #endif

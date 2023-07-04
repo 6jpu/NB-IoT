@@ -12,9 +12,16 @@
  ********************************************************************************/
 #include <stdio.h>
 #include <string.h>
-#include "atcmd.h"
-#include "comport.h"
+#include <unistd.h>
 #include "nbiot.h"
+#include "bc28.h"
+
+#if ( defined CONFIG_PRINT_STDOUT )
+#define dbg_print(format,args...) printf(format, ##args)
+
+#else
+#define dbg_print(format,args...) do{} while(0);
+#endif
 
 int main (int argc, char **argv)
 {
@@ -22,8 +29,8 @@ int main (int argc, char **argv)
     int         rv = 0;
     char        dev[20] = "/dev/ttyUSB0";
     long        baudrate = 9600;
-    char        conf[8] = "8N1";
-    char        data[32] = "9,02000F000400000010";
+    char        conf[] = "8N1";
+    char        data[] = "9,02000F000400000010";
     char        buf[1024];
 	char        ip[] = "221.229.214.202";
 	char        port[] = "5683";
@@ -31,29 +38,27 @@ int main (int argc, char **argv)
 
     if (comport_open(&com, dev, baudrate, conf) < 0)
     {
-        printf ("comport open failure!\n");
+        dbg_print ("comport open failure!\n");
         return -1;
     }
-    printf ("comport open successfully!\n");
+    dbg_print ("comport open successfully!\n");
 
     for ( ; ; )
     {
-        memset(data, 0, sizeof(data));
-
 		rv = atcmd_nmstatus(&com);
 		if ( rv < 0 )
 		{	
 			rv = nbiot_attach_check(&com);
 			if ( rv < 0 )
 			{
-				printf ("nbiot_attach_check error!\n");
+				dbg_print ("nbiot_attach_check error!\n");
 				continue;
 			}
 
 			rv = nbiot_connect_cloud(&com, ip, port);
 			if ( rv < 0 )
 			{
-				printf ("nbiot_connect_cloud error!\n");
+				dbg_print ("nbiot_connect_cloud error!\n");
 				continue;
 			}
 		}
@@ -61,10 +66,11 @@ int main (int argc, char **argv)
 		rv = atcmd_qlwuldataex(&com, data);
 		if ( rv < 0 )
 		{
-			printf ("atcmd_qlwuldataex error!\n");
+			dbg_print ("atcmd_qlwuldataex error!\n");
 		}
-		
-/*      printf ("Data to comport:");
+	
+		sleep(3);
+/*      dbg_print ("Data to comport:");
         scanf ("%s", &data);
         strcat (data,"\r\n");
 
@@ -72,38 +78,38 @@ int main (int argc, char **argv)
 		rv = send_atcmd(&com, data, buf, sizeof(buf), 10);
 		if (rv < 0)
 		{
-			printf ("send_atcmd error!\n");
+			dbg_print ("send_atcmd error!\n");
 			goto CleanUp;
 		}
 
 
-		printf ("Data from comport:%d\n", strlen(buf));
-		printf ("%s\n", buf);
+		dbg_print ("Data from comport:%d\n", strlen(buf));
+		dbg_print ("%s\n", buf);
 	
         if (comport_send(&com, data, strlen(data)) < 0)
         {
-            printf ("send data failure!\n");
+            dbg_print ("send data failure!\n");
             rv =  -1;
             goto CleanUp;
         }
-        printf ("send data successfully!\n");
+        dbg_print ("send data successfully!\n");
 
         memset (buf, 0, sizeof(buf));
         if (comport_recv(&com, buf, sizeof(buf), 5) < 0)
 		{
-            printf ("receive data failure!\n");
+            dbg_print ("receive data failure!\n");
             rv =  -2;
             goto CleanUp;
         }
 
-        printf ("Data from comport:\n");
-        printf ("%s", buf);
+        dbg_print ("Data from comport:\n");
+        dbg_print ("%s", buf);
 */
     }
 
 CleanUp:
     comport_close(&com);
-    printf ("comport closed!\n");
+    dbg_print ("comport closed!\n");
     return rv;
 }
 

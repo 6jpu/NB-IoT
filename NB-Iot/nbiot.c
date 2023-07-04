@@ -27,15 +27,15 @@ int nbiot_attach_check(comport_t *comport)
 	}
 
 	/* 关闭回显 */
-	rv = atcmd_ate(comport, 0 );
+/* 	rv = atcmd_ate(comport, DISABLE );
 	if ( rv < 0 )
 	{
 		printf ("atcmd_ate error!\n");
 		return -2;
 	}
- 
+*/
 	/* 设置手动联网 */
-    rv = atcmd_nconfig(comport, 0);
+    rv = atcmd_nconfig(comport, DISABLE);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_nconfig_0 error!\n");
@@ -43,7 +43,7 @@ int nbiot_attach_check(comport_t *comport)
     }   
 
 	/* 设置手动连接云平台 */
-    rv = atcmd_qregswt(comport, 0);
+    rv = atcmd_qregswt(comport, DISABLE);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_qregswt_0 error!\n");
@@ -59,13 +59,13 @@ int nbiot_attach_check(comport_t *comport)
     }
 
 	/* 关闭射频 */
-    rv = atcmd_cfun(comport, 0);
+/*  rv = atcmd_cfun(comport, DISABLE);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cfun_0 error!\n");
         return -5; 
     }   
-
+*/
 	/* 设置相应频段 */
     rv = atcmd_nband(comport, "5,8");
     if ( rv < 0 ) 
@@ -75,13 +75,14 @@ int nbiot_attach_check(comport_t *comport)
     } 
   
 	/*  打开射频 */ 
-	rv = atcmd_cfun(comport, 0);
+	rv = atcmd_cfun(comport, ENABLE);
 	if ( rv < 0 )
 	{
 		printf ("atcmd_cfun_1 error!\n");
 		return -7;
 	}
 
+	printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	/* 查询信号强度 */
 	rv = atcmd_csq(comport);
     if ( rv < 0 ) 
@@ -139,7 +140,7 @@ int nbiot_connect_cloud(comport_t *comport, char *ip , char *port)
     }
 
 	/* 开始注册 */
-    rv = atcmd_qlwsregind(comport, 0);
+    rv = atcmd_qlwsregind(comport, DISABLE);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_qlwsregind_0 error!\n");

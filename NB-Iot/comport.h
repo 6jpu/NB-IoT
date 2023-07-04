@@ -13,21 +13,25 @@
 #ifndef _COMPORT_H_
 #define _COMPORT_H_
 
+#define CONFIG_DEF_FRAGSIZE    128
 typedef struct comport_s {
 	int             fd;
-	char            devname[20];    // 串口设备
+	int             fragsize;       // 大数据传输时fragment大小 
+	char            devname[32];    // 串口设备
     long            baudrate;       // 波特率 
     char            dbit;           // 数据位 
     char            parity;         // 奇偶校验 
     char            sbit;           // 停止位 
 } comport_t;
 
-int comport_open(comport_t *comport, char *devname, long baudrate, char *conf);
+extern int comport_open(comport_t *comport, char *devname, long baudrate, const char *conf);
 
-int comport_close(comport_t *comport);
+extern int comport_close(comport_t *comport);
 
-int comport_send(comport_t *comport, char *data, int bytes);
+extern int comport_send(comport_t *comport, char *data, int data_bytes);
 
-int comport_recv(comport_t *comport, char *buf, int size, int timeout);
+/* read data from $comport in $timeout <ms> to $buf no more than $size bytes */
+#define TIMEOUT_NONE           0
+extern int comport_recv(comport_t *comport, char *buf, int size, int timeout);
 
 #endif
