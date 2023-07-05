@@ -28,13 +28,13 @@ int nbiot_attach_check(comport_t *comport)
 	}
 
 	/* 关闭回显 */
-/* 	rv = atcmd_ate(comport, DISABLE );
+ 	rv = atcmd_ate(comport, DISABLE );
 	if ( rv < 0 )
 	{
 		printf ("atcmd_ate error!\n");
 		return -2;
 	}
-*/
+
 	/* 设置手动联网 */
     rv = atcmd_nconfig(comport, DISABLE);
     if ( rv < 0 ) 
@@ -60,13 +60,13 @@ int nbiot_attach_check(comport_t *comport)
     }
 
 	/* 关闭射频 */
-/*  rv = atcmd_cfun(comport, DISABLE);
+    rv = atcmd_cfun(comport, DISABLE);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cfun_0 error!\n");
         return -5; 
     }   
-*/
+
 	/* 设置相应频段 */
     rv = atcmd_nband(comport, "5,8");
     if ( rv < 0 ) 
@@ -99,7 +99,6 @@ int nbiot_attach_check(comport_t *comport)
 		return -9;
     }
 
-	sleep(3);
 	/* 查询网络注册状态 */
     rv = atcmd_cereg(comport);
     if ( rv < 0 ) 

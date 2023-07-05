@@ -75,21 +75,16 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 		   if( bytes >= sizeof(buf) )
 			   break;
 
-         
-//		   dbg_print("bytes:%d\n", bytes);
-
 		   rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 100);
            if( rv < 0 )
            {
 			   dbg_print("comport_recv error!\n");
-//			   dbg_print("rv : %d\n", rv);
 			   return -3;
            }
 
 		   bytes += rv;
 //		   dbg_print("send_atcmd buf:%s\n", buf);
 
-//		   printf ("expect:%s\n", expect);
 		   if (expect && strstr(buf, expect))
 		   {
 			   res = ATRES_EXPECT;

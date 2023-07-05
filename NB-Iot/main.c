@@ -52,8 +52,7 @@ int main (int argc, char **argv)
 			if ( rv < 0 )
 			{
 				dbg_print ("nbiot_attach_check error!\n");
-				//continue;
-				break;
+				continue;
 			}
 
 			rv = nbiot_connect_cloud(&com, ip, port);
