@@ -67,7 +67,7 @@ int atcmd_nrb(comport_t *comport)
 	}
 
 	memset(buf, 0, sizeof(buf));
-	rv = send_atcmd(comport, "AT+NRB\r\n", "OK", AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
+	rv = send_atcmd(comport, "AT+NRB\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
 
 	dbg_print ("atcmd_nrb buf:%s\n", buf);
 
@@ -77,7 +77,7 @@ int atcmd_nrb(comport_t *comport)
 		return -2;
 	}
 
-	if ( rv != ATRES_EXPECT )
+	if ( rv != ATRES_EXPECT  && !strstr(buf, "REBOOTING"))
 	{
 		dbg_print ("Reboot error!\n");
 		return -3;
@@ -150,7 +150,10 @@ int atcmd_cereg(comport_t *comport)
     {   
         dbg_print ("atcmd_cereg parameter error!\n");
         return -1; 
-    }   
+    }
+
+	/* wait to register */
+	sleep(5);
 
 	memset(buf, 0, sizeof(buf));
     rv = send_atcmd(comport, "AT+CEREG?\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
@@ -327,9 +330,9 @@ int atcmd_ncdp(comport_t *comport, char *ip, char *port)
     }   
 
 	memset(at, 0, sizeof(at));
-	snprintf(at, sizeof(at), "AT+NCDP=%s,%s", ip, port);
+	snprintf(at, sizeof(at), "AT+NCDP=%s,%s\r\n", ip, port);
 
-	rv = send_atcmd_check_ok(comport, at, 500);
+	rv = send_atcmd_check_ok(comport, at, 1000);
     if (rv < 0)
     {   
         dbg_print ("send_atcmd:%s error!\n", at);

@@ -70,26 +70,26 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 	 res = ATRES_TIMEOUT;
 	 memset(buf, 0, sizeof(buf));
 
-	 for(i=0; i<timeout/10; i++)
+	 for(i=0; i<timeout/100; i++)
 	 {
 		   if( bytes >= sizeof(buf) )
 			   break;
 
          
-		   dbg_print("bytes:%d\n", bytes);
+//		   dbg_print("bytes:%d\n", bytes);
 
-		   rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 10);
+		   rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 100);
            if( rv < 0 )
            {
 			   dbg_print("comport_recv error!\n");
-			   dbg_print("rv : %d\n", rv);
+//			   dbg_print("rv : %d\n", rv);
 			   return -3;
            }
 
 		   bytes += rv;
-		   dbg_print("send_atcmd buf:%s\n", buf);
+//		   dbg_print("send_atcmd buf:%s\n", buf);
 
-		   printf ("expect:%s\n", expect);
+//		   printf ("expect:%s\n", expect);
 		   if (expect && strstr(buf, expect))
 		   {
 			   res = ATRES_EXPECT;
@@ -118,7 +118,7 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 
 	 if (res == ATRES_TIMEOUT)
 	 {
-		 dbg_print("comport receive timeout!\n");
+//		 dbg_print("comport receive timeout!\n");
 	 }
 
 	 return res;

@@ -323,8 +323,6 @@ int comport_recv(comport_t *comport, char *buf, int size, int timeout)
         return -2;
     }
 
-	dbg_print("into comport_recv\n");
-
 	FD_ZERO(&rfds);
 	FD_ZERO(&exfds);
 	FD_SET(comport->fd, &rfds);
@@ -374,7 +372,7 @@ int comport_recv(comport_t *comport, char *buf, int size, int timeout)
 	if ( !rv )
 		rv = bytes;
 	
-	dbg_print("read:%s\n", buf);
+//	dbg_print("read:%s\n", buf);
 
 	return rv;
 

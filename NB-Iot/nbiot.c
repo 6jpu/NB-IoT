@@ -12,6 +12,7 @@
  ********************************************************************************/
 
 #include <stdio.h>
+#include <unistd.h>
 #include "nbiot.h"
 
 /* 检查NB模块的网络附着情况 */
@@ -82,7 +83,6 @@ int nbiot_attach_check(comport_t *comport)
 		return -7;
 	}
 
-	printf ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 	/* 查询信号强度 */
 	rv = atcmd_csq(comport);
     if ( rv < 0 ) 
@@ -99,6 +99,7 @@ int nbiot_attach_check(comport_t *comport)
 		return -9;
     }
 
+	sleep(3);
 	/* 查询网络注册状态 */
     rv = atcmd_cereg(comport);
     if ( rv < 0 ) 
@@ -146,7 +147,8 @@ int nbiot_connect_cloud(comport_t *comport, char *ip , char *port)
         printf ("atcmd_qlwsregind_0 error!\n");
         return -3; 
     }   
- 
+
+	sleep(10);
     rv = atcmd_nmstatus(comport);
     if ( rv < 0 ) 
     {   

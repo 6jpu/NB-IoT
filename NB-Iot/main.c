@@ -52,7 +52,8 @@ int main (int argc, char **argv)
 			if ( rv < 0 )
 			{
 				dbg_print ("nbiot_attach_check error!\n");
-				continue;
+				//continue;
+				break;
 			}
 
 			rv = nbiot_connect_cloud(&com, ip, port);
@@ -69,42 +70,7 @@ int main (int argc, char **argv)
 			dbg_print ("atcmd_qlwuldataex error!\n");
 		}
 	
-		sleep(3);
-/*      dbg_print ("Data to comport:");
-        scanf ("%s", &data);
-        strcat (data,"\r\n");
-
-		memset(buf, 0, sizeof(buf));
-		rv = send_atcmd(&com, data, buf, sizeof(buf), 10);
-		if (rv < 0)
-		{
-			dbg_print ("send_atcmd error!\n");
-			goto CleanUp;
-		}
-
-
-		dbg_print ("Data from comport:%d\n", strlen(buf));
-		dbg_print ("%s\n", buf);
-	
-        if (comport_send(&com, data, strlen(data)) < 0)
-        {
-            dbg_print ("send data failure!\n");
-            rv =  -1;
-            goto CleanUp;
-        }
-        dbg_print ("send data successfully!\n");
-
-        memset (buf, 0, sizeof(buf));
-        if (comport_recv(&com, buf, sizeof(buf), 5) < 0)
-		{
-            dbg_print ("receive data failure!\n");
-            rv =  -2;
-            goto CleanUp;
-        }
-
-        dbg_print ("Data from comport:\n");
-        dbg_print ("%s", buf);
-*/
+		sleep(10);
     }
 
 CleanUp:
