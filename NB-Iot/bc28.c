@@ -33,11 +33,14 @@
 int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 {
 	int        rv = 0;
-	int        res;
-	char      *ptr;
+	int        res = 1;
+	char      *ptr = NULL;
 	int        i = 0;
+	int        j = 0;
 	int        bytes = 0;
 	char       buf[1024];
+
+	memset(value, 0, size);
 
 	for(i=0; i<timeout/10; i++)
 	{
@@ -48,7 +51,7 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 		if( rv < 0 )
 	    {
 	   	    dbg_print("comport_recv error!\n");
-		    return -3;
+		    return -1;
 	    }
 
 	    bytes += rv;
@@ -57,34 +60,36 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 		ptr = strstr(buf, "+NNMI:");
 	    if ( ptr )
 	    {
+			ptr = strchr(ptr, ',');  /* found ',' before the data */
+			if( !ptr )
+			{
+				dbg_print("Not found ',' before value\n");
+				continue;
+			}
+			ptr++;   /* skip ','  */
+
+			while(*ptr!='\r' && j<size-1)
+			{
+				if( !isspace(*ptr) && *ptr!='\"') /* skip space,\r,\n ...  */
+					value[j++] = *ptr;
+				ptr ++;
+			}
+
+			ptr++; /* skip  */
+
 		    res = ATRES_EXPECT;
 		    break;
 	    }
-	   
+
+		/* Clear non-control message */
+		bytes -= rv;
+		memset(buf, 0, sizeof(buf));
 	}
 
 	if (bytes > 0)
 	{
-		dbg_print("comport_recv buf:%s\n", buf);
+		dbg_print("comport_recv ctrl buf:%s\n", buf);
 	}
-
-    ptr = strchr(ptr, ',');  /* found ',' before the data */
-    if( !ptr )
-    {
-        dbg_print("Not found ':' before value\n");
-        return -3;
-    }
-    ptr++;   /* skip ':'  */
-
-    memset(value, 0, size);
-    while(*ptr!='\r' && i<size-1)
-    {
-        if( !isspace(*ptr) && *ptr!='\"') /* skip space,\r,\n ...  */
-            value[i++] = *ptr;
-        ptr ++;
-    }
-
-    ptr++; /* skip  */
 
 	return res;
 }
