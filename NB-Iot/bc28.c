@@ -18,7 +18,7 @@
 #include "bc28.h"
 #include <termios.h>
 #include <unistd.h>
-
+#include <ctype.h>
 
 #define CONFIG_PRINT_STDOUT
 
@@ -29,6 +29,65 @@
 #define dbg_print(format,args...) do{} while(0);
 #endif
 
+
+int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
+{
+	int        rv = 0;
+	int        res;
+	char      *ptr;
+	int        i = 0;
+	int        bytes = 0;
+	char       buf[1024];
+
+	for(i=0; i<timeout/10; i++)
+	{
+		if( bytes >= sizeof(buf) )
+		    break;
+
+		rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 10);
+		if( rv < 0 )
+	    {
+	   	    dbg_print("comport_recv error!\n");
+		    return -3;
+	    }
+
+	    bytes += rv;
+//		   dbg_print("send_atcmd buf:%s\n", buf);
+
+		ptr = strstr(buf, "+NNMI:");
+	    if ( ptr )
+	    {
+		    res = ATRES_EXPECT;
+		    break;
+	    }
+	   
+	}
+
+	if (bytes > 0)
+	{
+		dbg_print("comport_recv buf:%s\n", buf);
+	}
+
+    ptr = strchr(ptr, ',');  /* found ',' before the data */
+    if( !ptr )
+    {
+        dbg_print("Not found ':' before value\n");
+        return -3;
+    }
+    ptr++;   /* skip ':'  */
+
+    memset(value, 0, size);
+    while(*ptr!='\r' && i<size-1)
+    {
+        if( !isspace(*ptr) && *ptr!='\"') /* skip space,\r,\n ...  */
+            value[i++] = *ptr;
+        ptr ++;
+    }
+
+    ptr++; /* skip  */
+
+	return res;
+}
 
 /*  查看 AT 命令通信是否正常 
  *  成功 返回0，出错返回负数
