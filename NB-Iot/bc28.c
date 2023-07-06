@@ -30,6 +30,10 @@
 #endif
 
 
+/* 接受云平台控制命令
+ * value 存放接受的数部分，size 为value 大小
+ * 成功返回0，出错返回负数
+ * */
 int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 {
 	int        rv = 0;
@@ -39,6 +43,12 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 	int        j = 0;
 	int        bytes = 0;
 	char       buf[1024];
+
+	if ( !comport || !value)
+	{
+		dbg_print("invalid input arugments\n");
+		return -1;
+	}
 
 	memset(value, 0, size);
 
@@ -51,7 +61,7 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 		if( rv < 0 )
 	    {
 	   	    dbg_print("comport_recv error!\n");
-		    return -1;
+		    return -2;
 	    }
 
 	    bytes += rv;
@@ -92,6 +102,50 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 	}
 
 	return res;
+}
+
+/* 解析控制命令
+ * value 为接受的数据，size 为value 大小，ID 为服务ID
+ * 成功返回0，出错返回负数
+ * */
+int atcmd_ctrl_parse(char *value, int size, char *ID)
+{
+	if ( !value || !ID)
+	{
+		dbg_print("invalid input arugments\n");
+		return -1;
+	}
+
+	// 判断是否为下发控制指令
+    if (value[0] != '0' || value[1] != '6') 
+	{
+        dbg_print("not control message!\n");
+        return -2;
+    }
+
+    // 判断是否为相应ID
+    if (strncmp(value + 2, ID, 4) != 0)
+	{
+        dbg_print("ID does't match!\n");
+        return -3;
+    }
+
+    // 控制指令
+    if (value[size - 2] == '0' && value[size - 1] == '1')
+    {
+        dbg_print("开灯\n");
+    }
+	else if (value[size - 2] == '0' && value[size - 1] == '0') 
+    {
+        dbg_print("关灯\n");
+    }
+	else
+    {
+        dbg_print("control message error!\n");
+		return -4;
+    }
+
+    return 0;
 }
 
 /*  查看 AT 命令通信是否正常 

@@ -35,6 +35,9 @@ typedef struct nbiot_info_s
 /* 接收云平台的控制指令 */
 extern int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout);
 
+/* 解析控制命令 */
+int atcmd_ctrl_parse(char *value, int size, char *ID);
+
 /* 查看 AT 命令通信是否正常 */
 extern int atcmd_at(comport_t *comport);
 
