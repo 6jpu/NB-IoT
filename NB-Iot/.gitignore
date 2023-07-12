@@ -6,6 +6,8 @@
 *.sh
 test.c
 tags
+cscope*
+tags
 install/
 
 #log
@@ -18,5 +20,3 @@ Log/
 
 #bin
 a.out
-cscope*
-tags
