@@ -363,9 +363,9 @@ int comport_recv(comport_t *comport, char *buf, int size, int timeout)
 		if (bytes >= size )
 			break;
 
-		/* try to read data in 10ms again, if no data arrive it will break */
+		/* try to read data in 1ms again, if no data arrive it will break */
 		tv.tv_sec = 0;
-		tv.tv_usec = 10000;
+		tv.tv_usec = 1000;
 		tv_ptr = &tv;
 	}
 

@@ -42,8 +42,6 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
      int          rv = 0;
 	 int          res;
 	 char         buf[ATCMD_REPLY_LEN] = {'\0'};
-	 time_t       current_time;      //当前时间戳
-	 time_t       pretime = 0;       //上次时间戳
 
 	 if( !comport || !atcmd )
 	 {
@@ -70,12 +68,12 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 	 res = ATRES_TIMEOUT;
 	 memset(buf, 0, sizeof(buf));
 
-	 for(i=0; i<timeout/100; i++)
+	 for(i=0; i<timeout/10; i++)
 	 {
 		   if( bytes >= sizeof(buf) )
 			   break;
 
-		   rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 100);
+		   rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 10);
            if( rv < 0 )
            {
 			   dbg_print("comport_recv error!\n");
