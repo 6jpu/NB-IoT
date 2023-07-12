@@ -105,12 +105,12 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 }
 
 /* 解析控制命令
- * value 为接受的数据，size 为value 大小，ID 为服务ID
+ * value 为接受的数据，size 为value 大小，LED_ID 为LED 服务ID
  * 成功返回0，出错返回负数
  * */
-int atcmd_ctrl_parse(char *value, int size, char *ID)
+int atcmd_ctrl_parse(char *value, int size, char *LED_ID)
 {
-	if ( !value || !ID)
+	if ( !value || !LED_ID)
 	{
 		dbg_print("invalid input arugments\n");
 		return -1;
@@ -123,10 +123,10 @@ int atcmd_ctrl_parse(char *value, int size, char *ID)
         return -2;
     }
 
-    // 判断是否为相应ID
-    if (strncmp(value + 2, ID, 4) != 0)
+    // 判断是否为相应LED_ID
+    if (strncmp(value + 2, LED_ID, 4) != 0)
 	{
-        dbg_print("ID does't match!\n");
+        dbg_print("LED_ID does't match!\n");
         return -3;
     }
 
