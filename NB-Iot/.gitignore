@@ -16,6 +16,7 @@ Log/
 *.a
 
 #bin
+*.o
 a.out
 cscope*
 tags
