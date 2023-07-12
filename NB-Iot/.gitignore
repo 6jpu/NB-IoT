@@ -13,10 +13,10 @@ Log/
 
 #lib
 *.so
+*.o
 *.a
 
 #bin
-*.o
 a.out
 cscope*
 tags
