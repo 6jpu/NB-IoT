@@ -16,6 +16,7 @@
 #include "nbiot.h"
 #include "bc28.h"
 #include "sht20.h"
+#include "adc_mq2.h"
 
 #define I2C_DEV         "/dev/i2c-1"
 
@@ -38,6 +39,8 @@ int main (int argc, char **argv)
 	char		temp_str[20];
 	char		rh_str[20];
 	uint8_t		serialnumber[8];
+	adc_dev_t	mq2;
+	char		smoke_str[20];
 
     if (comport_open(&com, dev, baudrate, conf) < 0)
     {
@@ -80,6 +83,7 @@ int main (int argc, char **argv)
 			}
 		}
 
+		//温湿度采样
 		if ( sht2x_sample(sht20_fd, temp_str, rh_str, 20) < 0 )
 		{
 				printf ("sht20 sample failure\n");
@@ -96,7 +100,7 @@ int main (int argc, char **argv)
 		rv = atcmd_qlwuldataex(&com, data);
 		if ( rv < 0 )
 		{
-			dbg_print ("atcmd_qlwuldataex error!\n");
+			dbg_print ("atcmd_qlwuldataex temp_str error!\n");
 		}
 
 		//上报相对湿度
@@ -105,7 +109,24 @@ int main (int argc, char **argv)
 		rv = atcmd_qlwuldataex(&com, data);
 		if ( rv < 0 )
 		{
-			dbg_print ("atcmd_qlwuldataex error!\n");
+			dbg_print ("atcmd_qlwuldataex rh_str error!\n");
+		}
+
+		//烟雾浓度采样
+		if ( mq2_sample(&mq2, sizeof(mq2), smoke_str, sizeof(smoke_str)) < 0 )
+		{
+			printf ("smoke_sample error\n");
+			ret = -5;
+			goto CleanUp;
+		}
+
+		//上报烟雾浓度
+		memset(data, 0, sizeof(data));
+		snprintf(data, 22, "9,%s", smoke_str);
+		rv = atcmd_qlwuldataex(&com, data);
+		if ( rv < 0 )
+		{
+			dbg_print ("atcmd_qlwuldataex smoke_str error!\n");
 		}
 
 		sleep(1);

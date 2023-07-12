@@ -13,7 +13,6 @@
 #ifndef _ADC_MQ2_H_
 #define _ADC_MQ2_H_
 
-
 typedef struct adc_dev_s
 {
 	int    raw; //原始数据，数字值
@@ -29,6 +28,8 @@ enum path_index
 };	
 
 static int file_data_read(char *filename, char *buf, size_t buf_size);
+
+int mq2_sample(adc_dev_t *mq2, int size, char *smoke_str, size_t len);
 
 #endif
 
