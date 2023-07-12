@@ -39,44 +39,14 @@
 #include <string.h>
 #include "sht20.h"
 
+//#define CONFIG_PRINT_STDOUT
 
-int main (int argc, char **argv)
-{
-	int		fd;
-	float	temp;
-	float	rh;
-	uint8_t	serialnumber[8];
+#if ( defined CONFIG_PRINT_STDOUT )
+#define dbg_print(format,args...) printf(format, ##args)
 
-	if (argc != 2)
-	{
-		printf ("Usage: %s /dev/i2c-x\n", argv[0]);
-		return 0;
-	}
-
-	fd = sht2x_init(argv[1]);
-	if (fd < 0)
-	{
-		printf ("SHT2x initialize failure\n");
-		return 1;
-	}
-
-	if ( sht2x_get_serialnumber(fd, serialnumber, 8) < 0 )
-	{
-		printf ("SHT2x get serial number failure\n");
-		return 2;
-	}
-
-	if ( sht2x_get_temp_humidity(fd, &temp, &rh) < 0 )
-	{
-		printf ("SHT2x get get temperature and relative humidity failure\n");
-		return 3;
-	}
-
-	printf ("Temperature=%lf ℃ relative humidity=%lf%%\n", temp, rh);
-	close(fd);
-
-	return 0;
-} 
+#else
+#define dbg_print(format,args...) do{} while(0);
+#endif
 
 /* ms级休眠函数 */
 static inline void msleep(unsigned long ms)
@@ -109,14 +79,14 @@ static inline void dump_buf(const char *prompt, uint8_t *buf, int size)
 
 	if (prompt)
 	{
-		printf ("%s ", prompt);
+		dbg_print ("%s ", prompt);
 	}
 
 	for (i=0; i<size; i++)
 	{
-		printf ("%02x ", buf[i]);
+		dbg_print ("%02x ", buf[i]);
 	}
-	printf ("\n");
+	dbg_print ("\n");
 
 	return;
 }
@@ -187,7 +157,7 @@ int sht2x_get_serialnumber(int fd, uint8_t *serialnumber, int size)
 	memset(buf, 0, sizeof(buf));
 	read(fd, buf, 4);
 
-	serialnumber[1]=buf[0]; /* Read SNC_1 */
+	serialnumber[1]=buf[0]; /*  Read SNC_1 */
 	serialnumber[0]=buf[1]; /*  Read SNC_0 */
 	serialnumber[7]=buf[2]; /*  Read SNA_1 */
 	serialnumber[6]=buf[3]; /*  Read SNA_0 */
