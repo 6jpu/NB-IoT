@@ -33,7 +33,7 @@ typedef struct nbiot_info_s
 }nbiot_info_t;
 
 /* 接收云平台的控制指令 */
-extern int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout);
+extern int atcmd_ctrl_recv(comport_t *comport, char *value, int size);
 
 /* 解析控制命令 */
 int atcmd_ctrl_parse(char *value, int size, char *ID);
@@ -43,6 +43,9 @@ extern int atcmd_at(comport_t *comport);
 
 /* 重启模块 */
 extern int atcmd_nrb(comport_t *comport);
+
+/*  关闭新消息指示，使用AT+NMGR接收指令 */
+int atcmd_nnmi0(comport_t *comport);
 
 /* 查询信号强度 */
 extern int atcmd_csq(comport_t *comport);

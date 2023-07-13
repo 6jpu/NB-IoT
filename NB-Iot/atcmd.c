@@ -77,7 +77,7 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
            if( rv < 0 )
            {
 			   dbg_print("comport_recv error!\n");
-			   return -3;
+			   return -4;
            }
 
 		   bytes += rv;

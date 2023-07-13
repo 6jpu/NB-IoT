@@ -59,12 +59,20 @@ int nbiot_attach_check(comport_t *comport)
         return -4; 
     }
 
+	/* 关闭新消息指示 */
+	rv = atcmd_nnmi0(comport);
+	if (rv < 0)
+	{
+		printf ("atcmd_nnmi0 error!\n");
+		return -5;
+	}
+
 	/* 关闭射频 */
     rv = atcmd_cfun(comport, DISABLE);
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cfun_0 error!\n");
-        return -5; 
+        return -6; 
     }   
 
 	/* 设置相应频段 */
@@ -72,7 +80,7 @@ int nbiot_attach_check(comport_t *comport)
     if ( rv < 0 ) 
     {   
 		printf ("atcmd_nband error!\n");
-        return -6; 
+        return -7; 
     } 
   
 	/*  打开射频 */ 
@@ -80,7 +88,7 @@ int nbiot_attach_check(comport_t *comport)
 	if ( rv < 0 )
 	{
 		printf ("atcmd_cfun_1 error!\n");
-		return -7;
+		return -8;
 	}
 
 	/* 查询信号强度 */
@@ -88,7 +96,7 @@ int nbiot_attach_check(comport_t *comport)
     if ( rv < 0 ) 
     {   
         printf ("atcmd_csq error!\n");
-		return -8;
+		return -9;
     }
 
 	/* 附着网络 */
@@ -96,7 +104,7 @@ int nbiot_attach_check(comport_t *comport)
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cgatt1 error!\n");
-		return -9;
+		return -10;
     }
 
 	/* 查询网络注册状态 */
@@ -104,7 +112,7 @@ int nbiot_attach_check(comport_t *comport)
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cereg error!\n");
-		return -10;
+		return -11;
     }
 
 	/* 查询模块附着网络状态 */
@@ -112,7 +120,7 @@ int nbiot_attach_check(comport_t *comport)
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cgatt error!\n");
-		return -11;
+		return -12;
     }
 
 	/* 查询模块获取到的 IP 地址 */
@@ -120,7 +128,7 @@ int nbiot_attach_check(comport_t *comport)
     if ( rv < 0 ) 
     {   
         printf ("atcmd_cgpaddr error!\n");
-		return -12;
+		return -13;
     }
 
     return 0;

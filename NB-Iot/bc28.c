@@ -29,19 +29,21 @@
 #define dbg_print(format,args...) do{} while(0);
 #endif
 
+#define RED_FONT 		"\033[1;31m"
+#define GREEN_FONT 		"\033[1;32m"
+#define DEFAULT_FONT 	"\033[0m"
 
 /* 接受云平台控制命令
  * value 存放接受的数部分，size 为value 大小
  * 成功返回0，出错返回负数
  * */
-int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
+int atcmd_ctrl_recv(comport_t *comport, char *value, int size)
 {
 	int        rv = 0;
 	int        res = 1;
 	char      *ptr = NULL;
 	int        i = 0;
 	int        j = 0;
-	int        bytes = 0;
 	char       buf[1024];
 
 	if ( !comport || !value)
@@ -51,55 +53,37 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size, int timeout)
 	}
 
 	memset(value, 0, size);
-
-	for(i=0; i<timeout/10; i++)
+	rv = send_atcmd(comport, "AT+NMGR\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
+	if (rv < 0)
 	{
-		if( bytes >= sizeof(buf) )
-		    break;
-
-		rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 10);
-		if( rv < 0 )
-	    {
-	   	    dbg_print("comport_recv error!\n");
-		    return -2;
-	    }
-
-	    bytes += rv;
-//		   dbg_print("send_atcmd buf:%s\n", buf);
-
-		ptr = strstr(buf, "+NNMI:");
-	    if ( ptr )
-	    {
-			ptr = strchr(ptr, ',');  /* found ',' before the data */
-			if( !ptr )
-			{
-				dbg_print("Not found ',' before value\n");
-				continue;
-			}
-			ptr++;   /* skip ','  */
-
-			while(*ptr!='\r' && j<size-1)
-			{
-				if( !isspace(*ptr) && *ptr!='\"') /* skip space,\r,\n ...  */
-					value[j++] = *ptr;
-				ptr ++;
-			}
-
-			ptr++; /* skip  */
-
-		    res = ATRES_EXPECT;
-		    break;
-	    }
-
-		/* Clear non-control message */
-		bytes -= rv;
-		memset(buf, 0, sizeof(buf));
+		dbg_print ("send_atcmd:AT+NMGR error!\n");
+		return -2;
 	}
 
-	if (bytes > 0)
+	if ( !strstr(buf, "OK") )
 	{
-		dbg_print("comport_recv ctrl buf:%s\n", buf);
+		dbg_print ("Get control message error!\n");
+		return -3;
 	}
+//  dbg_print("send_atcmd buf:%s\n", buf);
+
+	ptr = strchr(buf, ','); /*  found ',' before the data */
+	if ( ptr )
+	{
+		ptr++;   /* skip ','  */
+
+		while(*ptr!='\r' && j<size-1)
+		{
+			value[j++] = *ptr;
+			ptr ++;
+		}
+
+		ptr++; /* skip  */
+
+		res = ATRES_EXPECT;
+	}
+
+	dbg_print("comport_recv ctrl buf:%s\n", buf);
 
 	return res;
 }
@@ -133,11 +117,13 @@ int atcmd_ctrl_parse(char *value, int size, char *LED_ID)
     // 控制指令
     if (value[size - 2] == '0' && value[size - 1] == '1')
     {
-        dbg_print("开灯\n");
+        dbg_print("%s开灯%s\n", RED_FONT, DEFAULT_FONT);
+		sleep(2);
     }
 	else if (value[size - 2] == '0' && value[size - 1] == '0') 
     {
-        dbg_print("关灯\n");
+        dbg_print("%s关灯%s\n", GREEN_FONT, DEFAULT_FONT);
+		sleep(2);
     }
 	else
     {
@@ -206,6 +192,29 @@ int atcmd_nrb(comport_t *comport)
 	return 0;
 }
 
+/*  关闭新消息指示，使用AT+NMGR接收指令 
+ *  成功 返回0，出错返回负数
+ * */
+int atcmd_nnmi0(comport_t *comport)
+{
+	int   rv;
+	char  at[] = "AT+NNMI=0\r\n"; 
+
+    if( !comport )
+    {
+        dbg_print("invalid input arugments\n");
+        return -1;
+    }
+
+	rv = send_atcmd_check_ok(comport, at, 500);
+	if ( rv < 0)
+	{
+		dbg_print ("Close New Message Indications Error\n");
+		return -2;
+	}
+
+	return 0;
+}
 /*  查询信号强度
  *  信号正常返回0,出错返回负数
  *  */
