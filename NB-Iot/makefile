@@ -8,7 +8,7 @@ LIBNAME7=adc_mq2
 LIBNAME8=led
 LIBNAME9=pwm_beep
 
-LIBPATH1=`pwd`
+LIBPATH1=`pwd`/inc
 LIBPATH2=/usr/lib/arm-linux-gnueabihf
 APPNAME=main
 CFLAGS+=-I ${LIBPATH1}
