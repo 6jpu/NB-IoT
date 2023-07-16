@@ -13,6 +13,9 @@
 #ifndef _ADC_MQ2_H_
 #define _ADC_MQ2_H_
 
+#include "led.h"
+#include "pwm_beep.h"
+
 typedef struct adc_dev_s
 {
 	int    raw; //原始数据，数字值
@@ -26,6 +29,8 @@ enum path_index
 	IN_VOLTAGE_SCALE = 0,
 	IN_VOLTAGE1_RAW,
 };	
+
+extern gpiod_led_t led[LED_MAX];
 
 static int file_data_read(char *filename, char *buf, size_t buf_size);
 
