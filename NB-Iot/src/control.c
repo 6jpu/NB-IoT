@@ -13,3 +13,79 @@
 
 #include "control.h"
 
+#define CONFIG_PRINT_STDOUT
+
+#if ( defined CONFIG_PRINT_STDOUT )
+#define dbg_print(format,args...) printf(format, ##args)
+
+#else
+#define dbg_print(format,args...) do{} while(0);
+#endif
+
+/* 打印颜色控制 */
+#define RED_FONT        "\033[1;31m"
+#define GREEN_FONT      "\033[1;32m"
+#define DEFAULT_FONT    "\033[0m"
+
+/* 解析命令控制硬件
+ * value 为接受的数据，size 为value 大小
+ * 成功返回0，出错返回负数
+ * */
+int parse_ctrl(char *value, int size)
+{
+    if ( !value || !size)
+    {
+        dbg_print("invalid input arugments\n");
+        return -1;
+    }
+
+    // 判断是否为下发控制指令
+    if (value[0] != '0' || value[1] != '6')
+    {
+        dbg_print("not control message!\n");
+        return -2;
+    }
+
+    // 判断是否为相应LED_ID
+    if (strncmp(value + 2, LED_ID, 4) == 0)
+    {
+		// 控制指令
+		if (value[size - 2] == '0' && value[size - 1] == '1')
+		{
+			dbg_print("%s开灯%s\n", RED_FONT, DEFAULT_FONT);
+			led_control(&led[LED_RED], ON);
+			sleep(2);
+		}
+		else if (value[size - 2] == '0' && value[size - 1] == '0')
+		{
+			dbg_print("%s关灯%s\n", GREEN_FONT, DEFAULT_FONT);
+			led_control(&led[LED_RED], OFF);
+			sleep(2);
+		}
+	}
+    // 判断是否为相应BEEP_ID
+    else if (strncmp(value + 2, BEEP_ID, 4) == 0)
+    {
+		// 控制指令
+		if (value[size - 2] == '0' && value[size - 1] == '1')
+		{
+			dbg_print("%s开蜂鸣器%s\n", RED_FONT, DEFAULT_FONT);
+			pwm_config("enable", "1");
+			sleep(2);
+		}
+		else if (value[size - 2] == '0' && value[size - 1] == '0')
+		{
+			dbg_print("%s关蜂鸣器%s\n", GREEN_FONT, DEFAULT_FONT);
+			pwm_config("enable", "0");
+			sleep(2);
+		}
+    }
+	else
+	{
+        dbg_print("control message error!\n");
+        return -3;
+	}
+
+    return 0;
+}
+

@@ -14,8 +14,6 @@
 #ifndef  _BC28_H_
 #define  _BC28_H_
 
-#include "led.h"
-#include "pwm_beep.h"
 #include "atcmd.h"
 
 enum
@@ -35,13 +33,8 @@ typedef struct nbiot_info_s
 }nbiot_info_t;
 
 
-extern gpiod_led_t led[LED_MAX];
-
 /* 接收云平台的控制指令 */
 extern int atcmd_ctrl_recv(comport_t *comport, char *value, int size);
-
-/* 解析控制命令 */
-int atcmd_ctrl_parse(char *value, int size, char *ID);
 
 /* 查看 AT 命令通信是否正常 */
 extern int atcmd_at(comport_t *comport);

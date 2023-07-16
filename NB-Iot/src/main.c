@@ -20,12 +20,17 @@
 #include "sht20.h"
 #include "adc_mq2.h"
 #include "msleep.h"
+#include "control.h"
 
 #define I2C_DEV         "/dev/i2c-1"
 #define BEEP_DEV		"/pwmchip1"
 
-int g_stop = 0;
+int			g_stop = 0;
 gpiod_led_t led[LED_MAX];
+/*  云平台服务ID */
+char		LED_ID[] = "1F42";
+char        BEEP_ID[] = "1F41";
+
 
 /* 信号处理函数 */
 void sig_handler(int signum);
@@ -42,7 +47,6 @@ int main (int argc, char **argv)
     char        buf[1024];
 	char        ip[] = "221.229.214.202";
 	char        port[] = "5683";
-	char		LED_ID[] = "1F42";
 	char		ctrl_cmd[32];
     comport_t   com;
 	int			sht20_fd;
@@ -175,7 +179,7 @@ int main (int argc, char **argv)
 		else if ( ATRES_EXPECT==rv )
 		{
 			printf ("Value:%s\n", ctrl_cmd);
-			rv = atcmd_ctrl_parse(ctrl_cmd, strlen(ctrl_cmd), LED_ID);
+			rv = parse_ctrl(ctrl_cmd, strlen(ctrl_cmd));
 			if ( rv < 0 )
 			{
 				dbg_print ("atcmd_ctrl_parse error1\n");

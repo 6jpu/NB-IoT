@@ -14,5 +14,14 @@
 #ifndef _CONTROL_H_
 #define _CONTROL_H_
 
+#include "led.h"
+#include "pwm_beep.h"
+
+/*  云平台服务ID */
+extern char        LED_ID[];
+extern char        BEEP_ID[];
+extern gpiod_led_t led[LED_MAX];
+
+int parse_ctrl(char *value, int size);
 
 #endif

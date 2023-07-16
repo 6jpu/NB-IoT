@@ -7,6 +7,8 @@ LIBNAME6=sht20
 LIBNAME7=adc_mq2
 LIBNAME8=led
 LIBNAME9=pwm_beep
+LIBNAME10=control
+
 
 INC_PATH=`pwd`/../inc
 LIBPATH1=`pwd`
@@ -24,6 +26,7 @@ LDFLAGS+=-l${LIBNAME6}
 LDFLAGS+=-l${LIBNAME7}
 LDFLAGS+=-l${LIBNAME8}
 LDFLAGS+=-l${LIBNAME9}
+LDFLAGS+=-l${LIBNAME10}
 
 CC=arm-linux-gnueabihf-gcc
 AR=ar
@@ -42,6 +45,7 @@ compile:
 	${AR} -rcs lib${LIBNAME7}.a ${LIBNAME7}.o
 	${AR} -rcs lib${LIBNAME8}.a ${LIBNAME8}.o
 	${AR} -rcs lib${LIBNAME9}.a ${LIBNAME9}.o
+	${AR} -rcs lib${LIBNAME10}.a ${LIBNAME10}.o
 	${CC} ${CFLAGS} main.c -o ${APPNAME} ${LDFLAGS} -L ${LIBPATH2} -l${LIBNAME1} -static 
 
 install:

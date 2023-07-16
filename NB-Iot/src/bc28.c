@@ -29,9 +29,6 @@
 #define dbg_print(format,args...) do{} while(0);
 #endif
 
-#define RED_FONT 		"\033[1;31m"
-#define GREEN_FONT 		"\033[1;32m"
-#define DEFAULT_FONT 	"\033[0m"
 
 /* 接受云平台控制命令
  * value 存放接受的数部分，size 为value 大小
@@ -86,56 +83,6 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size)
 	dbg_print("comport_recv ctrl buf:%s\n", buf);
 
 	return res;
-}
-
-/* 解析控制命令
- * value 为接受的数据，size 为value 大小，LED_ID 为LED 服务ID
- * 成功返回0，出错返回负数
- * */
-int atcmd_ctrl_parse(char *value, int size, char *LED_ID)
-{
-	if ( !value || !LED_ID)
-	{
-		dbg_print("invalid input arugments\n");
-		return -1;
-	}
-
-	// 判断是否为下发控制指令
-    if (value[0] != '0' || value[1] != '6') 
-	{
-        dbg_print("not control message!\n");
-        return -2;
-    }
-
-    // 判断是否为相应LED_ID
-    if (strncmp(value + 2, LED_ID, 4) != 0)
-	{
-        dbg_print("LED_ID does't match!\n");
-        return -3;
-    }
-
-    // 控制指令
-    if (value[size - 2] == '0' && value[size - 1] == '1')
-    {
-        dbg_print("%s开灯%s\n", RED_FONT, DEFAULT_FONT);
-		led_control(&led[LED_RED], ON);
-		pwm_config("enable", "1");
-		sleep(2);
-    }
-	else if (value[size - 2] == '0' && value[size - 1] == '0') 
-    {
-        dbg_print("%s关灯%s\n", GREEN_FONT, DEFAULT_FONT);
-		led_control(&led[LED_RED], OFF);
-		pwm_config("enable", "0");
-		sleep(2);
-    }
-	else
-    {
-        dbg_print("control message error!\n");
-		return -4;
-    }
-
-    return 0;
 }
 
 /*  查看 AT 命令通信是否正常 
