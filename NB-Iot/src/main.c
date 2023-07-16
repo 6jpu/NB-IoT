@@ -69,7 +69,7 @@ int main (int argc, char **argv)
         return -1;
     }
     dbg_print ("comport open successfully!\n");
-/* 
+#if 0
 	sht20_fd = sht2x_init(I2C_DEV);
 	if (sht20_fd < 0)
 	{
@@ -83,7 +83,7 @@ int main (int argc, char **argv)
 			return -3;
 	}
 
-*/
+#endif
 	//LED 初始化
 	if (led_init(&led[LED_RED], 1, 11) < 0)
 	{
@@ -124,7 +124,8 @@ int main (int argc, char **argv)
 		{
 			//data[] = "9,02000F000400000010";
 			//温湿度采样
-/* 			if ( sht2x_sample(sht20_fd, temp_str, rh_str, 20) < 0 )
+#if 0
+			if ( sht2x_sample(sht20_fd, temp_str, rh_str, 20) < 0 )
 			{
 					printf ("sht20 sample failure\n");
 					ret = -4;
@@ -132,18 +133,19 @@ int main (int argc, char **argv)
 			}
 			dbg_print ("temp_str:%s\n", temp_str);
 			dbg_print ("rh_str:%s\n", rh_str);
-*/			
+
 			//上报温度
-//			memset(data, 0, sizeof(data));
-//			snprintf(data, 22, "9,%s", temp_str);
+			memset(data, 0, sizeof(data));
+			snprintf(data, 22, "9,%s", temp_str);
+#endif
 			rv = atcmd_qlwuldataex(&com, data);
 			if ( rv < 0 )
 			{
 				dbg_print ("atcmd_qlwuldataex temp_str error!\n");
 			}
 
-			//上报相对湿度
-/* 			memset(data, 0, sizeof(data));
+#if 0		//上报相对湿度
+ 			memset(data, 0, sizeof(data));
 			snprintf(data, 22, "9,%s", rh_str);
 			rv = atcmd_qlwuldataex(&com, data);
 			if ( rv < 0 )
@@ -167,7 +169,7 @@ int main (int argc, char **argv)
 			{
 				dbg_print ("atcmd_qlwuldataex smoke_str error!\n");
 			}
-*/
+#endif
             pretime = current_time;
         }
 	
