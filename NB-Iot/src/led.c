@@ -25,7 +25,7 @@ int led_init(gpiod_led_t *gpiod_led, unsigned char gpio_chip_num, unsigned char 
 
 	if (gpio_chip_num == 0 || gpio_chip_num > 5 || gpio_off_num == 0 || gpio_off_num > 32 || !gpiod_led)
 	{
-		printf ("[INFO] %s argument error.\n", __FUNCTION__);
+		PARSE_LOG_ERROR ("[INFO] %s argument error.\n", __FUNCTION__);
 		return -1;
 	}
 
@@ -34,20 +34,21 @@ int led_init(gpiod_led_t *gpiod_led, unsigned char gpio_chip_num, unsigned char 
 
 	if (!(gpiod_led->chip = gpiod_chip_open(dev_name)))
 	{
-		printf ("Open gpiochip failure\n");
+		PARSE_LOG_ERROR ("Open gpiochip failure\n");
 		return -2;
 	}
 
 	if (!(gpiod_led->line = gpiod_chip_get_line(gpiod_led->chip, gpio_off_num)))
 	{
-		printf ("Get gpio line_led failure\n");
+		PARSE_LOG_ERROR ("Get gpio line_led failure\n");
 		return -3;
 	}
 
 	/* 设置初始值为灭 */
 	if (gpiod_line_request_output(gpiod_led->line, "led_out", OFF) < 0)
 	{
-		printf ("Request line_led\n");
+		PARSE_LOG_ERROR ("Request line_led output error\n");
+		return -4;
 	}
 
 	return 0;
@@ -59,14 +60,14 @@ int led_control(gpiod_led_t *gpiod_led, int status)
 
 	if ( !gpiod_led )
 	{
-		printf ("[INFO] %s argument error.\n", __FUNCTION__);
+		PARSE_LOG_ERROR ("[INFO] %s argument error.\n", __FUNCTION__);
 		return -1;
 	}
 
 	level = (status==ON) ? ON : OFF;
 	if (gpiod_line_set_value(gpiod_led->line, level) < 0)
 	{
-		printf ("Set line_led value failure\n");
+		PARSE_LOG_ERROR ("Set line_led value failure\n");
 		return -2;
 	}
 
@@ -86,7 +87,7 @@ int led_release(gpiod_led_t *gpiod_led)
 {
 	if (!gpiod_led)
 	{
-		printf ("[INFO] %s argument error.\n", __FUNCTION__);
+		PARSE_LOG_ERROR ("[INFO] %s argument error.\n", __FUNCTION__);
 		return -1;
 	}
 

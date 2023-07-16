@@ -27,20 +27,20 @@ int pwm_config(const char *attr, const char *val)
 
     if(attr == NULL || val == NULL)
     {
-        printf("[%s] argument error\n", __FUNCTION__);
+        PARSE_LOG_ERROR("[%s] argument error\n", __FUNCTION__);
         return -1;
     }
 
     memset(file_path, 0, sizeof(file_path));
     snprintf(file_path, sizeof(file_path), "%s%s", pwm_path, attr);
     if (0 > (fd = open(file_path, O_WRONLY))) {
-        printf("[%s] open %s error\n", __FUNCTION__, file_path);
+        PARSE_LOG_ERROR("[%s] open %s error\n", __FUNCTION__, file_path);
         return fd;
     }
 
     len = strlen(val);
     if (len != write(fd, val, len)) {
-        printf("[%s] write %s to %s error\n", __FUNCTION__, val, file_path);
+        PARSE_LOG_ERROR("[%s] write %s to %s error\n", __FUNCTION__, val, file_path);
         close(fd);
         return -2;
     }
@@ -59,7 +59,7 @@ int pwm_init(char *pwm_dev)
 
 	if ( !pwm_dev )
 	{
-		printf ("[%s]:input argument is invalid\n", __FUNCTION__);
+		PARSE_LOG_ERROR("[%s]:input argument is invalid\n", __FUNCTION__);
 		return -1;
 	}
 
@@ -73,12 +73,12 @@ int pwm_init(char *pwm_dev)
 	{
         snprintf(temp, sizeof(temp) , "/sys/class/pwm%s/export", pwm_dev);
         if (0 > (fd = open(temp, O_WRONLY))) {
-            printf("open %s error\n", pwm_dev);
+            PARSE_LOG_ERROR("open %s error\n", pwm_dev);
             return -2;
         }
         //导出pwm0文件夹
         if (1 != write(fd, "0", 1)) {
-            printf("write '0' to  %s/export error\n", pwm_dev);
+            PARSE_LOG_ERROR("write '0' to  %s/export error\n", pwm_dev);
             close(fd);
             return -3;
         }

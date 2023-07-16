@@ -16,6 +16,16 @@
 
 #include "led.h"
 #include "pwm_beep.h"
+#include "logger.h"
+
+#define CONFIG_PRINT_STDOUT
+
+#if ( defined CONFIG_PRINT_STDOUT )
+#define dbg_print(format,args...) printf(format, ##args)
+
+#else
+#define dbg_print(format,args...) do{} while(0);
+#endif
 
 /*  云平台服务ID */
 extern char        LED_ID[];

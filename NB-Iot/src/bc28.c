@@ -20,15 +20,6 @@
 #include <ctype.h>
 #include "bc28.h"
 
-#define CONFIG_PRINT_STDOUT
-
-#if ( defined CONFIG_PRINT_STDOUT )
-#define dbg_print(format,args...) printf(format, ##args)
-
-#else
-#define dbg_print(format,args...) do{} while(0);
-#endif
-
 
 /* 接受云平台控制命令
  * value 存放接受的数部分，size 为value 大小
@@ -45,7 +36,7 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size)
 
 	if ( !comport || !value)
 	{
-		dbg_print("invalid input arugments\n");
+		PARSE_LOG_ERROR ("invalid input arugments\n");
 		return -1;
 	}
 
@@ -53,16 +44,16 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size)
 	rv = send_atcmd(comport, "AT+NMGR\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
 	if (rv < 0)
 	{
-		dbg_print ("send_atcmd:AT+NMGR error!\n");
+		PARSE_LOG_ERROR ("send_atcmd:AT+NMGR error!\n");
 		return -2;
 	}
 
 	if ( !strstr(buf, "OK") )
 	{
-		dbg_print ("Get control message error!\n");
+		PARSE_LOG_ERROR ("Get control message error!\n");
 		return -3;
 	}
-//  dbg_print("send_atcmd buf:%s\n", buf);
+//  PARSE_LOG_DEBUG ("send_atcmd buf:%s\n", buf);
 
 	ptr = strchr(buf, ','); /*  found ',' before the data */
 	if ( ptr )
@@ -80,7 +71,7 @@ int atcmd_ctrl_recv(comport_t *comport, char *value, int size)
 		res = ATRES_EXPECT;
 	}
 
-	dbg_print("comport_recv ctrl buf:%s\n", buf);
+	PARSE_LOG_DEBUG ("comport_recv ctrl buf:%s\n", buf);
 
 	return res;
 }
@@ -95,14 +86,14 @@ int atcmd_at(comport_t *comport)
 
     if( !comport )
     {
-        dbg_print("invalid input arugments\n");
+        PARSE_LOG_ERROR ("invalid input arugments\n");
         return -1;
     }
 
 	rv = send_atcmd_check_ok(comport, at, 500);
 	if ( rv < 0)
 	{
-		dbg_print ("NB-IoT not connected...\n");
+		PARSE_LOG_ERROR ("NB-IoT not connected...\n");
 		return -2;
 	}
 
@@ -117,28 +108,28 @@ int atcmd_nrb(comport_t *comport)
 
 	if ( !comport )
 	{
-		dbg_print ("atcmd_nrb parameter error!\n");
+		PARSE_LOG_ERROR ("atcmd_nrb parameter error!\n");
 		return -1;
 	}
 
 	memset(buf, 0, sizeof(buf));
 	rv = send_atcmd(comport, "AT+NRB\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
 
-	dbg_print ("atcmd_nrb buf:%s\n", buf);
+	PARSE_LOG_DEBUG ("atcmd_nrb buf:%s\n", buf);
 
 	if (rv < 0)
 	{
-		dbg_print ("send_atcmd:AT+NRB error!\n");
+		PARSE_LOG_ERROR ("send_atcmd:AT+NRB error!\n");
 		return -2;
 	}
 
 	if ( rv != ATRES_EXPECT  && !strstr(buf, "REBOOTING"))
 	{
-		dbg_print ("Reboot error!\n");
+		PARSE_LOG_ERROR ("Reboot error!\n");
 		return -3;
 	}
 
-	dbg_print ("AT+NRB %s\n", buf);
+	PARSE_LOG_INFO ("AT+NRB %s\n", buf);
 
 	return 0;
 }
@@ -153,19 +144,44 @@ int atcmd_nnmi0(comport_t *comport)
 
     if( !comport )
     {
-        dbg_print("invalid input arugments\n");
+        PARSE_LOG_ERROR ("invalid input arugments\n");
         return -1;
     }
 
 	rv = send_atcmd_check_ok(comport, at, 500);
 	if ( rv < 0)
 	{
-		dbg_print ("Close New Message Indications Error\n");
+		PARSE_LOG_ERROR ("Close New Message Indications Error\n");
 		return -2;
 	}
 
 	return 0;
 }
+
+/*  设置eDRX，延长connected 状态时间，便于接收控制指令 
+ *  成功 返回0，出错返回负数
+ * */
+int atcmd_cedrxs(comport_t *comport)
+{
+	int   rv;
+	char  at[] = "AT+CEDRXS=1,5,\"0101\"\r\n"; 
+
+    if( !comport )
+    {
+        PARSE_LOG_ERROR ("invalid input arugments\n");
+        return -1;
+    }
+
+	rv = send_atcmd_check_ok(comport, at, 500);
+	if ( rv < 0)
+	{
+		PARSE_LOG_ERROR ("Close New Message Indications Error\n");
+		return -2;
+	}
+
+	return 0;
+}
+
 /*  查询信号强度
  *  信号正常返回0,出错返回负数
  *  */
@@ -178,7 +194,7 @@ int atcmd_csq(comport_t *comport)
 
 	if ( !comport )
 	{
-		dbg_print ("atcmd_csq parameter error!\n");
+		PARSE_LOG_ERROR ("atcmd_csq parameter error!\n");
 		return -1;
 	}
 
@@ -186,13 +202,13 @@ int atcmd_csq(comport_t *comport)
 	rv = send_atcmd(comport, "AT+CSQ\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
 	if (rv < 0)
 	{
-		dbg_print ("send_atcmd:AT+CSQ error!\n");
+		PARSE_LOG_ERROR ("send_atcmd:AT+CSQ error!\n");
 		return -2;
 	}
 
 	if ( !strstr(buf, "OK") )
 	{
-		dbg_print ("Get signal strength error!\n");
+		PARSE_LOG_ERROR ("Get signal strength error!\n");
 		return -3;
 	}
 
@@ -200,18 +216,18 @@ int atcmd_csq(comport_t *comport)
 	rv = str_fetch(csq_str, sizeof(csq_str), buf, ":", ",");
 	if (rv < 0)
 	{
-		dbg_print ("fetch csq error!\n");
+		PARSE_LOG_ERROR ("fetch csq error!\n");
 		return -4;
 	}
     /* 检测信号质量 */
 	csq = atoi(csq_str);
 	if (csq==99 || csq < 10)
 	{
-		dbg_print ("signal strength poor or unknown\n");
+		PARSE_LOG_INFO ("signal strength poor or unknown\n");
 	//	return -4;
 	}
 
-	dbg_print ("AT+CSQ %s\n", buf);
+	PARSE_LOG_INFO ("AT+CSQ %s\n", buf);
 
 	return 0;
 }
@@ -226,7 +242,7 @@ int atcmd_cereg(comport_t *comport)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_cereg parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cereg parameter error!\n");
         return -1; 
     }
 
@@ -237,24 +253,24 @@ int atcmd_cereg(comport_t *comport)
     rv = send_atcmd(comport, "AT+CEREG?\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:AT+CEREG? error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:AT+CEREG? error!\n");
         return -2; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("Network registration status error!\n");
+        PARSE_LOG_ERROR ("Network registration status error!\n");
         return -3; 
     }
 
 	/* 判断网络是否注册 */
 	if ( !strstr(buf, "0,1") )
 	{
-		dbg_print ("Network not registered!\n");
+		PARSE_LOG_ERROR ("Network not registered!\n");
 		return -4;
 	}
 
-	dbg_print ("AT+CEREG? %s\n", buf);
+	PARSE_LOG_INFO ("AT+CEREG? %s\n", buf);
 
 	return 0;
 }          
@@ -269,7 +285,7 @@ int atcmd_cgatt(comport_t *comport)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_cgatt parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cgatt parameter error!\n");
         return -1; 
     }   
 
@@ -277,24 +293,24 @@ int atcmd_cgatt(comport_t *comport)
     rv = send_atcmd(comport, "AT+CGATT?\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:AT+CGATT? error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:AT+CGATT? error!\n");
         return -2; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("query attach status error!\n");
+        PARSE_LOG_ERROR ("query attach status error!\n");
         return -3; 
     }
 
 	/* Detached */
 	if ( strstr(buf, "0") )
 	{
-		dbg_print ("Detached\n");
+		PARSE_LOG_ERROR ("Detached\n");
 		return -4;
 	}
 
-	dbg_print ("AT+CGATT? %s\n", buf);
+	PARSE_LOG_INFO ("AT+CGATT? %s\n", buf);
 	return 0;
 
 }   
@@ -309,14 +325,14 @@ int atcmd_cgatt1(comport_t *comport)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_cgatt1 parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cgatt1 parameter error!\n");
         return -1; 
     }   
 
 	rv = send_atcmd_check_ok(comport, at, 1000);
     if ( rv < 0 )
     {   
-        dbg_print ("ps attach error!\n");
+        PARSE_LOG_ERROR ("ps attach error!\n");
         return -3; 
     }
 
@@ -333,7 +349,7 @@ int atcmd_cgpaddr(comport_t *comport)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_cgpaddr parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cgpaddr parameter error!\n");
         return -1; 
     }   
 
@@ -341,17 +357,17 @@ int atcmd_cgpaddr(comport_t *comport)
     rv = send_atcmd(comport, "AT+CGPADDR\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:AT+CGPADDR error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:AT+CGPADDR error!\n");
         return -2; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("show PDP addresses error!\n");
+        PARSE_LOG_ERROR ("show PDP addresses error!\n");
         return -3; 
     }
 
-	dbg_print ("AT+CGPADDR %s\n", buf);
+	PARSE_LOG_INFO ("AT+CGPADDR %s\n", buf);
 
 	return 0;
 }
@@ -364,7 +380,7 @@ int atcmd_nmstatus(comport_t *comport)
 
 	if ( !comport )
 	{
-		dbg_print ("atcmd_nmstatus parameter error!\n");
+		PARSE_LOG_ERROR ("atcmd_nmstatus parameter error!\n");
 		return -1;
 	}
 
@@ -372,23 +388,23 @@ int atcmd_nmstatus(comport_t *comport)
 	rv = send_atcmd(comport, "AT+NMSTATUS?\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
 	if (rv < 0)
 	{
-		dbg_print ("send_atcmd:AT+NMSTATUS? error!\n");
+		PARSE_LOG_ERROR ("send_atcmd:AT+NMSTATUS? error!\n");
 		return -2;
 	}
 
 	if ( !strstr(buf, "OK") )
 	{
-		dbg_print ("Message registration status error!\n");
+		PARSE_LOG_ERROR ("Message registration status error!\n");
 		return -3;
 	}
 
 	if ( !strstr(buf, "MO_DATA_ENABLED"))
 	{
-		dbg_print ("Register failed!\n");
+		PARSE_LOG_ERROR ("Register failed!\n");
 		return -4;
 	}
 
-	dbg_print ("AT+NMSTATUS? %s\n", buf);
+	PARSE_LOG_INFO ("AT+NMSTATUS? %s\n", buf);
 
 	return 0;
 }
@@ -403,7 +419,7 @@ int atcmd_ncdp(comport_t *comport, char *ip, char *port)
 
     if ( !comport && !ip && !port )
     {   
-        dbg_print ("atcmd_csq parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_csq parameter error!\n");
         return -1; 
     }   
 
@@ -413,7 +429,7 @@ int atcmd_ncdp(comport_t *comport, char *ip, char *port)
 	rv = send_atcmd_check_ok(comport, at, 1000);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 
@@ -428,7 +444,7 @@ int atcmd_cgsn(comport_t *comport, char *imei, int size)
     
 	if ( !comport && !imei && !size )
     {   
-        dbg_print ("atcmd_cgsn parameter error!\n");
+		PARSE_LOG_ERROR ("atcmd_cgsn parameter error!\n");
         return -1; 
     }   
 
@@ -436,24 +452,24 @@ int atcmd_cgsn(comport_t *comport, char *imei, int size)
     rv = send_atcmd(comport, "AT+CGSN=1\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:AT+CGSN=1 error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:AT+CGSN=1 error!\n");
         return -2; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("Request product serial number error!\n");
+        PARSE_LOG_ERROR ("Request product serial number error!\n");
         return -3;
     }
 
 	rv = str_fetch(imei, size, buf, ":", "\r\n");
 	if (rv < 0)
 	{
-		dbg_print ("fetch imei error!\n");
+		PARSE_LOG_ERROR ("fetch imei error!\n");
 		return -4;
 	}
 
-	dbg_print ("AT+CGSN=1 %s\n", buf);
+	PARSE_LOG_INFO ("AT+CGSN=1 %s\n", buf);
 	return 0;
 }
 
@@ -466,7 +482,7 @@ int atcmd_cimi(comport_t *comport, char *imsi, int size)
 
     if ( !comport && !imsi && !size)
     {   
-        dbg_print ("atcmd_cimi parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cimi parameter error!\n");
         return -1; 
     }   
 
@@ -474,25 +490,25 @@ int atcmd_cimi(comport_t *comport, char *imsi, int size)
     rv = send_atcmd(comport, "AT+CIMI\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:AT+CIMI error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:AT+CIMI error!\n");
         return -2; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("Request imsi error!\n");
+        PARSE_LOG_ERROR ("Request imsi error!\n");
         return -3; 
     }
 
 	rv = str_fetch(imsi_str, sizeof(imsi_str), buf, "460" ,"\r\n");
 	if (rv < 0)
 	{
-		dbg_print ("fetch imsi error!\n");
+		PARSE_LOG_ERROR ("fetch imsi error!\n");
 		return -4;
 	}
 	sprintf(imsi, "460%s", imsi_str);
 
-	dbg_print ("AT+CIMI %s\n",buf);
+	PARSE_LOG_INFO ("AT+CIMI %s\n",buf);
 
 	return 0;
 }
@@ -506,7 +522,7 @@ int atcmd_cgmm(comport_t *comport, char *name, int size)
 
     if ( !comport && !name && !size)
     {   
-        dbg_print ("atcmd_cgmm parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cgmm parameter error!\n");
         return -1; 
     }   
 
@@ -514,25 +530,25 @@ int atcmd_cgmm(comport_t *comport, char *name, int size)
     rv = send_atcmd(comport, "AT+CGMM\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:AT+CGMM error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:AT+CGMM error!\n");
         return -2; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("Request manufacturer model error!\n");
+        PARSE_LOG_ERROR ("Request manufacturer model error!\n");
         return -3; 
     }
 	
     rv = str_fetch(name_str, sizeof(name_str), buf, "BC" ,"\r\n");
     if (rv < 0)
     {   
-        dbg_print ("fetch manufacturer model error!\n");
+        PARSE_LOG_ERROR ("fetch manufacturer model error!\n");
         return -4; 
     }   
 	snprintf(name, size, "BC%s", name_str); 
 
-    dbg_print ("AT+CGMM %s\n",buf);
+    PARSE_LOG_INFO ("AT+CGMM %s\n",buf);
 
     return 0;
 
@@ -546,14 +562,14 @@ int atcmd_cgmr(comport_t *comport, char *version, int size)
 
     if ( !comport && !version && !size)
     {   
-        dbg_print ("atcmd_cgmr parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cgmr parameter error!\n");
         return -1; 
     }   
 
 	/* 打开回显便于进行信息解析 */
 	if ( atcmd_ate(comport, 1) < 0 )
 	{
-		dbg_print ("atcmd_ate error!\n");
+		PARSE_LOG_ERROR ("atcmd_ate error!\n");
 		return -2;
 	}
 
@@ -561,29 +577,29 @@ int atcmd_cgmr(comport_t *comport, char *version, int size)
     rv = send_atcmd(comport, "AT+CGMR\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:AT+CGMR error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:AT+CGMR error!\n");
         return -3; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("Request manufacturer revision error!\n");
+        PARSE_LOG_ERROR ("Request manufacturer revision error!\n");
         return -4; 
     }
 
     rv = str_fetch(version, size, buf, "\r\n" ,"OK");
     if (rv < 0)
     {   
-        dbg_print ("fetch manufacturer revision error!\n");
+        PARSE_LOG_ERROR ("fetch manufacturer revision error!\n");
         return -5; 
     }   
 
-    dbg_print ("AT+CGMR %s\n",buf);
+    PARSE_LOG_INFO ("AT+CGMR %s\n",buf);
 
 	/* 关闭回显节约资源 */
 	if ( atcmd_ate(comport, 0) < 0)
 	{
-		dbg_print ("atcmd_ate error!\n");
+		PARSE_LOG_ERROR ("atcmd_ate error!\n");
 		return -6;
 	}
 
@@ -601,7 +617,7 @@ int atcmd_ati(comport_t *comport, nbiot_info_t *info)
 
     if ( !comport && !info )
     {   
-        dbg_print ("atcmd_csq parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_csq parameter error!\n");
         return -1; 
     }
    
@@ -609,13 +625,13 @@ int atcmd_ati(comport_t *comport, nbiot_info_t *info)
     rv = send_atcmd(comport, "ATI\r\n", AT_OKSTR, AT_ERRSTR, buf, sizeof(buf),  TIMEOUT);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:ATI error!\n");
+        PARSE_LOG_ERROR ("send_atcmd:ATI error!\n");
         return -3; 
     }   
 
     if ( !strstr(buf, "OK") )
     {   
-        dbg_print ("Display product identification information error!\n");
+        PARSE_LOG_ERROR ("Display product identification information error!\n");
         return -4; 
     }
 
@@ -630,7 +646,7 @@ int atcmd_ati(comport_t *comport, nbiot_info_t *info)
 	strcpy(info->module_name, token[2]);
 	strcpy(info->version, token[3]);
 
-    dbg_print ("ATI %s\n", buf);
+    PARSE_LOG_INFO ("ATI %s\n", buf);
 
 	return 0;
 }
@@ -643,18 +659,18 @@ int atcmd_qlwuldataex(comport_t *comport, char *data)
 
     if ( !comport && !data )
     {   
-        dbg_print ("atcmd_qlwuldataex parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_qlwuldataex parameter error!\n");
         return -1; 
     }   
 
 	memset(at, 0, sizeof(at));
 	snprintf(at, sizeof(at), "AT+QLWULDATAEX=%s,0x0100\r\n", data);
 
-	dbg_print ("%s\n", at);		//debug
+	PARSE_LOG_ERROR ("%s\n", at);		//debug
     rv = send_atcmd_check_ok(comport, at, 500); 
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 
@@ -669,14 +685,14 @@ int atcmd_ate(comport_t *comport, int enabled)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_ate parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_ate parameter error!\n");
         return -1; 
     }  
 
     rv = send_atcmd_check_ok(comport, at, 500);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 
@@ -696,14 +712,14 @@ int atcmd_nconfig(comport_t *comport, int enabled)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_nconfig parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_nconfig parameter error!\n");
         return -1; 
     }
 
     rv = send_atcmd_check_ok(comport, at, 500); 
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 
@@ -722,14 +738,14 @@ int atcmd_cfun(comport_t *comport, int enabled)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_cfun parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_cfun parameter error!\n");
         return -1; 
     }  
 
     rv = send_atcmd_check_ok(comport, at, 7000); 
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 
@@ -748,14 +764,14 @@ int atcmd_qregswt(comport_t *comport, int enabled)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_qregswt parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_qregswt parameter error!\n");
         return -1; 
     }  
 
     rv = send_atcmd_check_ok(comport, at, 500); 
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 
@@ -774,14 +790,14 @@ int atcmd_qlwsregind(comport_t *comport, int enabled)
 
     if ( !comport )
     {   
-        dbg_print ("atcmd_qlwsregind parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_qlwsregind parameter error!\n");
         return -1; 
     }  
 
     rv = send_atcmd_check_ok(comport, at, 500);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 
@@ -799,7 +815,7 @@ int atcmd_nband(comport_t *comport, char *band)
 
     if ( !comport && !band )
     {   
-        dbg_print ("atcmd_nband parameter error!\n");
+        PARSE_LOG_ERROR ("atcmd_nband parameter error!\n");
         return -1; 
     }   
 
@@ -809,7 +825,7 @@ int atcmd_nband(comport_t *comport, char *band)
     rv = send_atcmd_check_ok(comport, at, 1000);
     if (rv < 0)
     {   
-        dbg_print ("send_atcmd:%s error!\n", at);
+        PARSE_LOG_ERROR ("send_atcmd:%s error!\n", at);
         return -2; 
     }   
 

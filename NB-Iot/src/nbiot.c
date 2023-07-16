@@ -23,7 +23,7 @@ int nbiot_attach_check(comport_t *comport)
 	rv = atcmd_at(comport);
 	if ( rv < 0 )
 	{
-		printf ("atcmd_at error!\n");
+		PARSE_LOG_ERROR ("atcmd_at error!\n");
 		return -1;
 	}
 
@@ -31,7 +31,7 @@ int nbiot_attach_check(comport_t *comport)
  	rv = atcmd_ate(comport, DISABLE );
 	if ( rv < 0 )
 	{
-		printf ("atcmd_ate error!\n");
+		PARSE_LOG_ERROR ("atcmd_ate error!\n");
 		return -2;
 	}
 
@@ -39,7 +39,7 @@ int nbiot_attach_check(comport_t *comport)
     rv = atcmd_nconfig(comport, DISABLE);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_nconfig_0 error!\n");
+        PARSE_LOG_ERROR ("atcmd_nconfig_0 error!\n");
         return -3; 
     }   
 
@@ -47,7 +47,7 @@ int nbiot_attach_check(comport_t *comport)
     rv = atcmd_qregswt(comport, DISABLE);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_qregswt_0 error!\n");
+        PARSE_LOG_ERROR ("atcmd_qregswt_0 error!\n");
         return -3; 
     }
 
@@ -55,7 +55,7 @@ int nbiot_attach_check(comport_t *comport)
     rv = atcmd_nrb(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_nrb error!\n");
+        PARSE_LOG_ERROR ("atcmd_nrb error!\n");
         return -4; 
     }
 
@@ -63,72 +63,80 @@ int nbiot_attach_check(comport_t *comport)
 	rv = atcmd_nnmi0(comport);
 	if (rv < 0)
 	{
-		printf ("atcmd_nnmi0 error!\n");
+		PARSE_LOG_ERROR ("atcmd_nnmi0 error!\n");
 		return -5;
+	}
+
+	/* 关闭新消息指示 */
+	rv = atcmd_cedrxs(comport);
+	if (rv < 0)
+	{
+		PARSE_LOG_ERROR ("atcmd_cedrxs error!\n");
+		return -6;
 	}
 
 	/* 关闭射频 */
     rv = atcmd_cfun(comport, DISABLE);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_cfun_0 error!\n");
-        return -6; 
+        PARSE_LOG_ERROR ("atcmd_cfun_0 error!\n");
+        return -7; 
     }   
 
 	/* 设置相应频段 */
     rv = atcmd_nband(comport, "5,8");
     if ( rv < 0 ) 
     {   
-		printf ("atcmd_nband error!\n");
-        return -7; 
+		PARSE_LOG_ERROR ("atcmd_nband error!\n");
+        return -8; 
     } 
   
 	/*  打开射频 */ 
 	rv = atcmd_cfun(comport, ENABLE);
 	if ( rv < 0 )
 	{
-		printf ("atcmd_cfun_1 error!\n");
-		return -8;
+		PARSE_LOG_ERROR ("atcmd_cfun_1 error!\n");
+		return -9;
 	}
 
 	/* 查询信号强度 */
 	rv = atcmd_csq(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_csq error!\n");
-		return -9;
+        PARSE_LOG_ERROR ("atcmd_csq error!\n");
+		return -10;
     }
 
 	/* 附着网络 */
     rv = atcmd_cgatt1(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_cgatt1 error!\n");
-		return -10;
+        PARSE_LOG_ERROR ("atcmd_cgatt1 error!\n");
+		return -11;
     }
 
 	/* 查询网络注册状态 */
     rv = atcmd_cereg(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_cereg error!\n");
-		return -11;
+        PARSE_LOG_ERROR ("atcmd_cereg error!\n");
+		return -12;
     }
 
 	/* 查询模块附着网络状态 */
     rv = atcmd_cgatt(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_cgatt error!\n");
-		return -12;
+        PARSE_LOG_ERROR ("atcmd_cgatt error!\n");
+		return -13;
     }
 
 	/* 查询模块获取到的 IP 地址 */
     rv = atcmd_cgpaddr(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_cgpaddr error!\n");
-		return -13;
+        PARSE_LOG_ERROR ("atcmd_cgpaddr error!\n");
+		return -14;
     }
 
     return 0;
@@ -143,7 +151,7 @@ int nbiot_connect_cloud(comport_t *comport, char *ip , char *port)
     rv = atcmd_ncdp(comport, ip, port);
     if( rv < 0 )
     {
-        printf("atcmd_ncdp error!\n");
+        PARSE_LOG_ERROR ("atcmd_ncdp error!\n");
         return -1;
     }
 
@@ -151,7 +159,7 @@ int nbiot_connect_cloud(comport_t *comport, char *ip , char *port)
     rv = atcmd_qlwsregind(comport, DISABLE);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_qlwsregind_0 error!\n");
+        PARSE_LOG_ERROR ("atcmd_qlwsregind_0 error!\n");
         return -3; 
     }   
 
@@ -159,7 +167,7 @@ int nbiot_connect_cloud(comport_t *comport, char *ip , char *port)
     rv = atcmd_nmstatus(comport);
     if ( rv < 0 ) 
     {   
-        printf ("atcmd_nmstatus error!\n");
+        PARSE_LOG_ERROR ("atcmd_nmstatus error!\n");
         return -3; 
     }   
     return 0;

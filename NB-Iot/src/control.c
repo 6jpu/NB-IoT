@@ -13,15 +13,6 @@
 
 #include "control.h"
 
-#define CONFIG_PRINT_STDOUT
-
-#if ( defined CONFIG_PRINT_STDOUT )
-#define dbg_print(format,args...) printf(format, ##args)
-
-#else
-#define dbg_print(format,args...) do{} while(0);
-#endif
-
 /* 打印颜色控制 */
 #define RED_FONT        "\033[1;31m"
 #define GREEN_FONT      "\033[1;32m"
@@ -35,14 +26,14 @@ int parse_ctrl(char *value, int size)
 {
     if ( !value || !size)
     {
-        dbg_print("invalid input arugments\n");
+        PARSE_LOG_ERROR("invalid input arugments\n");
         return -1;
     }
 
     // 判断是否为下发控制指令
     if (value[0] != '0' || value[1] != '6')
     {
-        dbg_print("not control message!\n");
+        PARSE_LOG_ERROR("not control message!\n");
         return -2;
     }
 
@@ -82,7 +73,7 @@ int parse_ctrl(char *value, int size)
     }
 	else
 	{
-        dbg_print("control message error!\n");
+        PARSE_LOG_ERROR("control message error!\n");
         return -3;
 	}
 

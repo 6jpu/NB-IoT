@@ -15,6 +15,7 @@
 #define  _NBIOT_H_
 
 #include "bc28.h"
+#include "logger.h"
 
 /* 检查NB模块的网络附着情况 */
 extern int nbiot_attach_check(comport_t *comport);

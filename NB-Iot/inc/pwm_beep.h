@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include "logger.h"
 
 int pwm_init(char *pwm_dev);
 

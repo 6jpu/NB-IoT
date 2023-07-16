@@ -19,6 +19,7 @@
 #define  ATCMD_REPLY_LEN		1024 /*  Max AT command reply message length */
 
 #include "comport.h"
+#include "logger.h"
 
 
 /* send_atcmd() return value status */

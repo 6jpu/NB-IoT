@@ -18,16 +18,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <unistd.h>
-
-//#define CONFIG_PRINT_STDOUT
-
-#if ( defined CONFIG_PRINT_STDOUT )
-#define dbg_print(format,args...) printf(format, ##args)
-
-#else
-#define dbg_print(format,args...) do{} while(0);
-#endif
-
+#include "logger.h"
 
 #define SOFTRESET						0xFE
 #define TRIGGER_TEMPERATURE_NO_HOLD		0xF3
@@ -62,17 +53,17 @@ static inline int sht2x_sample(int fd, char *temp_str, char *rh_str, size_t len)
 		return -1;
 	}
 
-	printf ("Temperature=%lf ℃  Relative humidity=%lf%%\n", temp, rh);
+	PARSE_LOG_INFO("Temperature=%lf ℃  Relative humidity=%lf%%\n", temp, rh);
 
 	memset(temp_str, 0, len);
 	/* 将温度转化为十六进制并转换为相应AT 报文格式 */
 	snprintf(temp_str, 19, "02%s%s%08X", TEMP_ID, TEMP_LEN, (int32_t)temp);
-	dbg_print ("temp_str:%s\n", temp_str);
+	PARSE_LOG_DEBUG("temp_str:%s\n", temp_str);
 
 	memset(rh_str, 0, len);
 	/* 将湿度转化为十六进制并转换为相应AT 报文格式 */
 	snprintf(rh_str, 19, "02%s%s%08X", RH_ID, RH_LEN, (int32_t)rh);
-	dbg_print ("rh_str:%s\n", rh_str);
+	PARSE_LOG_DEBUG("rh_str:%s\n", rh_str);
 
 	return 0;
 }

@@ -19,17 +19,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-
-#define CONFIG_PRINT_STDOUT
-
-#if ( defined CONFIG_PRINT_STDOUT )
-#define dbg_print(format,args...) printf(format, ##args)
-
-#else
-#define dbg_print(format,args...) do{} while(0);
-#endif
-
- /*  发送AT命令
+/*  发送AT命令
   *  comport:打开的串口，atcmd:发送的AT命令，
   *  expect:期望的返回值，error:出错返回值
   *  reply:存放AT命令返回内容，size：reply大小，
@@ -45,13 +35,13 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 
 	 if( !comport || !atcmd )
 	 {
-		 dbg_print("Invalid input arguments\n");
+		 PARSE_LOG_ERROR ("Invalid input arguments\n");
 		 return -1;
 	 }
 	 
 	 if( comport->fd <= 0 )
 	 {
-		 dbg_print("comport[%s] not opened\n", comport->devname);
+		 PARSE_LOG_ERROR ("comport[%s] not opened\n", comport->devname);
 		 return -2;
 	 }
 
@@ -61,7 +51,7 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 	 rv = comport_send(comport, atcmd, strlen(atcmd));
      if (rv < 0)
 	 {
-		 dbg_print("comport_send error!\n");
+		 PARSE_LOG_ERROR ("comport_send error!\n");
 		 return -3;
 	 }
 
@@ -76,12 +66,12 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 		   rv = comport_recv(comport, buf+bytes, sizeof(buf)-bytes, 10);
            if( rv < 0 )
            {
-			   dbg_print("comport_recv error!\n");
+			   PARSE_LOG_ERROR ("comport_recv error!\n");
 			   return -4;
            }
 
 		   bytes += rv;
-//		   dbg_print("send_atcmd buf:%s\n", buf);
+		   PARSE_LOG_DEBUG ("send_atcmd buf:%s\n", buf);
 
 		   if (expect && strstr(buf, expect))
 		   {
@@ -99,7 +89,7 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 	 
 	 if (bytes > 0)
 	 {
-		 dbg_print("comport_recv buf:%s\n", buf);
+		 PARSE_LOG_INFO ("comport_recv buf:%s\n", buf);
 	 }
 
 	 if (reply && size>0)
@@ -111,7 +101,7 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 
 	 if (res == ATRES_TIMEOUT)
 	 {
-//		 dbg_print("comport receive timeout!\n");
+		 PARSE_LOG_INFO ("comport receive timeout!\n");
 	 }
 
 	 return res;
@@ -130,7 +120,7 @@ int str_fetch(char *fetched, int size, const char *src, const char *start, const
     /* 参数检验 */
     if ( fetched==NULL || src==NULL || start==NULL || end==NULL)
     {   
-        dbg_print("str_fetch parameter error!\n");
+        PARSE_LOG_ERROR ("str_fetch parameter error!\n");
         return -1; 
     }   
 
@@ -138,7 +128,7 @@ int str_fetch(char *fetched, int size, const char *src, const char *start, const
     start_p = strstr(src, start);
     if (start_p==NULL)
     {   
-        dbg_print("未找到首字符！\n");
+        PARSE_LOG_ERROR ("未找到首字符！\n");
         return -2; 
     }   
     start_p += strlen(start);
@@ -147,7 +137,7 @@ int str_fetch(char *fetched, int size, const char *src, const char *start, const
     end_p = strstr(start_p, end);
     if ( end_p==NULL )
     {   
-        dbg_print("未找到尾字符！\n");
+        PARSE_LOG_ERROR ("未找到尾字符！\n");
         return -3; 
     }   
 
@@ -171,7 +161,7 @@ int send_atcmd_check_ok(comport_t *comport, char *at, int timeout)
 
     if( !comport || !at )
     {
-        dbg_print("Invalid input arguments\n");
+        PARSE_LOG_ERROR ("Invalid input arguments\n");
         return -1;
     }
 

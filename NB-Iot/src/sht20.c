@@ -22,9 +22,7 @@
  *         
  */
 
-#include <stdio.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
 #include <linux/types.h>
 #include <sys/stat.h>
@@ -32,22 +30,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <string.h>
 #include <stdint.h>
 #include <time.h>
 #include <errno.h>
 #include <string.h>
 #include "sht20.h"
 #include "msleep.h"
-
-//#define CONFIG_PRINT_STDOUT
-
-#if ( defined CONFIG_PRINT_STDOUT )
-#define dbg_print(format,args...) printf(format, ##args)
-
-#else
-#define dbg_print(format,args...) do{} while(0);
-#endif
 
 static inline void dump_buf(const char *prompt, uint8_t *buf, int size)
 {
@@ -60,14 +48,14 @@ static inline void dump_buf(const char *prompt, uint8_t *buf, int size)
 
 	if (prompt)
 	{
-		dbg_print ("%s ", prompt);
+		PARSE_LOG_INFO ("%s ", prompt);
 	}
 
 	for (i=0; i<size; i++)
 	{
-		dbg_print ("%02x ", buf[i]);
+		PARSE_LOG_INFO ("%02x ", buf[i]);
 	}
-	dbg_print ("\n");
+	PARSE_LOG_INFO ("\n");
 
 	return;
 }
@@ -79,7 +67,7 @@ int sht2x_softreset(int fd)
 
 	if (fd < 0)
 	{
-		printf ("%s line [%d] %s() get invalid input argument\n", __FILE__, __LINE__, __func__);
+		PARSE_LOG_ERROR ("%s line [%d] %s() get invalid input argument\n", __FILE__, __LINE__, __func__);
 		return -1;
 	}
 
@@ -102,7 +90,7 @@ int sht2x_init(char *i2c_dev)
 
 	if ( (fd=open(i2c_dev, O_RDWR)) < 0 )
 	{
-		printf ("i2c device open fialed:%s\n", strerror(errno));
+		PARSE_LOG_ERROR ("i2c device open fialed:%s\n", strerror(errno));
 		return -1;
 	}
 
@@ -112,7 +100,7 @@ int sht2x_init(char *i2c_dev)
 	
 	if ( sht2x_softreset(fd) < 0 )
 	{
-		printf ("SHT2x softreset failure\n");
+		PARSE_LOG_ERROR ("SHT2x softreset failure\n");
 		return -2;
 	}
 
@@ -125,7 +113,7 @@ int sht2x_get_serialnumber(int fd, uint8_t *serialnumber, int size)
 
 	if (fd < 0 || !serialnumber || size!=8)
 	{
-		printf ("%s line [%d] %s() get invalid input argument\n", __FILE__, __LINE__, __func__);
+		PARSE_LOG_ERROR ("%s line [%d] %s() get invalid input argument\n", __FILE__, __LINE__, __func__);
 		return -1;
 	}
 
@@ -155,7 +143,7 @@ int sht2x_get_temp_humidity(int fd,float *temp, float *rh)
 
 	if (fd<0 || !temp || !rh)
 	{
-		printf ("%s line [%d] %s() get invalid input arguments\n", __FILE__, __LINE__, __func__);
+		PARSE_LOG_ERROR ("%s line [%d] %s() get invalid input arguments\n", __FILE__, __LINE__, __func__);
 		return -1;
 	}
 

@@ -13,6 +13,7 @@
 #ifndef _LED_H_
 #define _LED_H_
 
+#include "logger.h"
 
 /* RGB LED index */
 enum

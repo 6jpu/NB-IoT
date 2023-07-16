@@ -13,6 +13,8 @@
 #ifndef _COMPORT_H_
 #define _COMPORT_H_
 
+#include "logger.h"
+
 #define CONFIG_DEF_FRAGSIZE    128
 typedef struct comport_s {
 	int             fd;
