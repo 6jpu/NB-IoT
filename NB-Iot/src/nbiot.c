@@ -67,7 +67,7 @@ int nbiot_attach_check(comport_t *comport)
 		return -5;
 	}
 
-	/* 关闭新消息指示 */
+	/* 设置eDRx */
 	rv = atcmd_cedrxs(comport);
 	if (rv < 0)
 	{
