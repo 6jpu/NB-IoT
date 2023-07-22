@@ -45,8 +45,6 @@ int send_atcmd(comport_t *comport, char *atcmd, char *expect, char *error, char 
 		 return -2;
 	 }
 
-	 // flushes both data received but not read, and data written but not transmitted in serial port 
-	 tcflush(comport->fd, TCIOFLUSH);
 
 	 rv = comport_send(comport, atcmd, strlen(atcmd));
      if (rv < 0)

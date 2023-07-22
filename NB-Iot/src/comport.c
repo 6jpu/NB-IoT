@@ -275,6 +275,9 @@ int comport_send(comport_t *comport, char *data, int data_bytes)
         return -2;
     }
 
+	/* flushes both data received but not read, and data written but not transmitted in serial port */  
+	tcflush(comport->fd, TCIOFLUSH);
+	
 	ptr = data;
 	left = data_bytes;
 
