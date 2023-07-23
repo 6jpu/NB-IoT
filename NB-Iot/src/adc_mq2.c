@@ -21,6 +21,7 @@
 #include <errno.h>
 #include "adc_mq2.h"
 #include "logger.h"
+#include "data_check.h"
 
 #define SMOKE_ID						"000F" //云平台烟雾浓度服务ID
 #define SMOKE_LEN						"0004" //云平台烟雾浓度服务数据长度
@@ -95,6 +96,13 @@ int mq2_sample(adc_dev_t *mq2, int size, char *smoke_str, size_t len)
 	mq2->act = (mq2->raw * mq2->scale) / 1000.f; //计算实际电压
 	mq2->conc = ((float)mq2->raw / 4096.f) * 100.f; //计算实际浓度
 	PARSE_LOG_INFO ("MQ-2 实际电压为:%.3fV,浓度为:%.1f%%.\n", mq2->act, mq2->conc);
+
+	/* 烟雾浓度自检 */
+	if(data_check( &mq2->conc ) < 0)
+	{
+		PARSE_LOG_ERROR ("Abnormal smoke concentration!\n");
+		return -3;
+	}
 
 	/* 当烟雾浓度超过80%时，自动触发警报 ,点亮LED 灯并打开蜂鸣器*/
 	if ( (int32_t)mq2->conc > 80 )

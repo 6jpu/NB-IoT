@@ -9,14 +9,18 @@ LIBNAME8=led
 LIBNAME9=pwm_beep
 LIBNAME10=control
 LIBNAME11=logger
+LIBNAME12=data_check
+LIBNAME13=mysqlite
 
 
-INC_PATH=`pwd`/../inc
+INC_PATH1=`pwd`/../inc
+INC_PATH2=/usr/local/include
 LIBPATH1=`pwd`
 LIBPATH2=/usr/lib/arm-linux-gnueabihf
 APPNAME=main
 
-CFLAGS+=-I ${INC_PATH}
+CFLAGS+=-I ${INC_PATH1}
+CFLAGS+=-I ${INC_PATH2}
 
 LDFLAGS+=-L ${LIBPATH1}
 LDFLAGS+=-l${LIBNAME2}
@@ -29,6 +33,8 @@ LDFLAGS+=-l${LIBNAME8}
 LDFLAGS+=-l${LIBNAME9}
 LDFLAGS+=-l${LIBNAME10}
 LDFLAGS+=-l${LIBNAME11}
+LDFLAGS+=-l${LIBNAME12}
+LDFLAGS+=-l${LIBNAME13}
 
 CC=arm-linux-gnueabihf-gcc
 AR=ar
@@ -49,7 +55,9 @@ compile:
 	${AR} -rcs lib${LIBNAME9}.a ${LIBNAME9}.o
 	${AR} -rcs lib${LIBNAME10}.a ${LIBNAME10}.o
 	${AR} -rcs lib${LIBNAME11}.a ${LIBNAME11}.o
-	${CC} ${CFLAGS} main.c -o ${APPNAME} ${LDFLAGS} -L ${LIBPATH2} -l${LIBNAME1} -static 
+	${AR} -rcs lib${LIBNAME12}.a ${LIBNAME12}.o
+	${AR} -rcs lib${LIBNAME13}.a ${LIBNAME13}.o
+	${CC} ${CFLAGS} main.c -o ${APPNAME} ${LDFLAGS} -L ${LIBPATH2} -l${LIBNAME1} -lsqlite3-arm -static 
 
 install:
 	mv ${APPNAME} `pwd`/../

@@ -22,6 +22,7 @@
 #include "msleep.h"
 #include "control.h"
 #include "logger.h"
+#include "mysqlite.h"
 
 #define I2C_DEV         "/dev/i2c-1"
 #define BEEP_DEV		"/pwmchip1"
@@ -75,6 +76,7 @@ int main (int argc, char **argv)
         return -1;
     }
     dbg_print ("comport open successfully!\n");
+
 #if 0
 	sht20_fd = sht2x_init(I2C_DEV);
 	if (sht20_fd < 0)
@@ -104,6 +106,13 @@ int main (int argc, char **argv)
 		return -5; 
 	} 
 
+	// 数据库初始化
+	if(sqlite_create() < 0)
+	{
+		PARSE_LOG_ERROR ("Creat database failure\n");
+		return -6;
+	}
+	
 	dbg_print ("Program initialization complete!\n");
 
     while ( !g_stop )
