@@ -1,10 +1,12 @@
 #仅供下载至开发板时使用
 
+APPNAME=smoke
+
 all:
-	rm -rf main
+	rm -rf ${APPNAME}
 	rm -rf Log/*
 	rz
-	chmod a+x main
+	chmod a+x ${APPNAME}
 	./main
 
 clean:
