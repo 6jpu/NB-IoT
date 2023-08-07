@@ -7,9 +7,7 @@ all:
 	rm -rf Log/*
 	rz
 	chmod a+x ${APPNAME}
-	./main
-
-clean:
+	./${APPNAME}
 
 init:
 	#BC28 硬件复位
@@ -27,6 +25,9 @@ close:
 	echo 11 >/sys/class/gpio/export
 	echo 1 >/sys/class/gpio/gpio11/value
 	echo 11 >/sys/class/gpio/export
+
+clean:
+
 
 distclean: clean
 	rm -rf Log/
