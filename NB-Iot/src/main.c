@@ -274,7 +274,7 @@ void sig_handler(int signum)
 void print_usage(char *proname)
 {
     printf("%s usage :\n",proname );
-    printf("-d(--device): specify BC28 comport device");
+    printf("-d(--device): specify BC28 comport device\n");
     printf("-b[daemon]: start daemon\n");
     printf("-t(--time_interval): set data reporting time interval\n");
     printf("-h(--help): print this help information.\n");
