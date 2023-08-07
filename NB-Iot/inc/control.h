@@ -32,6 +32,6 @@ extern char        LED_ID[];
 extern char        BEEP_ID[];
 extern gpiod_led_t led[LED_MAX];
 
-int parse_ctrl(char *value, int size);
+extern int parse_ctrl(char *value, int size);
 
 #endif

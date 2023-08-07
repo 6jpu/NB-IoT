@@ -45,13 +45,11 @@ int parse_ctrl(char *value, int size)
 		{
 			dbg_print("%s开灯%s\n", RED_FONT, DEFAULT_FONT);
 			led_control(&led[LED_RED], ON);
-			sleep(2);
 		}
 		else if (value[size - 2] == '0' && value[size - 1] == '0')
 		{
 			dbg_print("%s关灯%s\n", GREEN_FONT, DEFAULT_FONT);
 			led_control(&led[LED_RED], OFF);
-			sleep(2);
 		}
 	}
     // 判断是否为相应BEEP_ID
@@ -62,13 +60,11 @@ int parse_ctrl(char *value, int size)
 		{
 			dbg_print("%s开蜂鸣器%s\n", RED_FONT, DEFAULT_FONT);
 			pwm_config("enable", "1");
-			sleep(2);
 		}
 		else if (value[size - 2] == '0' && value[size - 1] == '0')
 		{
 			dbg_print("%s关蜂鸣器%s\n", GREEN_FONT, DEFAULT_FONT);
 			pwm_config("enable", "0");
-			sleep(2);
 		}
     }
 	else

@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <signal.h>
+#include <getopt.h>
 #include "nbiot.h"
 #include "bc28.h"
 #include "sht20.h"
@@ -24,28 +25,31 @@
 #include "logger.h"
 #include "mysqlite.h"
 
-#define I2C_DEV         "/dev/i2c-1"
+
+#define I2C_DEV         "/dev/i2c-0"
 #define BEEP_DEV		"/pwmchip1"
+
+/* 信号处理函数 */
+void sig_handler(int signum);
+/* 打印帮助信息 */
+void print_usage(char *proname);
 
 int			g_stop = 0;
 gpiod_led_t led[LED_MAX];
 /*  云平台服务ID */
 char		LED_ID[] = "1F42";
-char        BEEP_ID[] = "1F41";
+char        BEEP_ID[] = "1F43";
 
-
-/* 信号处理函数 */
-void sig_handler(int signum);
 
 int main (int argc, char **argv)
 {
     int         n;
     int         rv = 0;
 	int			ret = 0;
-    char        dev[20] = "/dev/ttyUSB0";
+    char        dev[20] = "/dev/ttymxc7";	//BC28 默认串口设备
     long        baudrate = 9600;
     char        conf[] = "8N1";
-    char        data[] = "9,02000F000400000010";
+    char        data[32] = "9,02001B000400000010";
     char        buf[1024];
 	char        ip[] = "221.229.214.202";
 	char        port[] = "5683";
@@ -62,6 +66,44 @@ int main (int argc, char **argv)
 	int			set_time = 5;      //设置上报时间间隔，默认为5秒
 	int			loglevel = LOG_LEVEL_DEBUG;   //可设置LOG_LEVEL_DEBUG,LOG_LEVEL_INFO,
 											  //LOG_LEVEL_WARN,LOG_LEVEL_ERROR四个级别
+	int			daemon_run = 0;
+	int			opt;
+	struct option opts[] = {
+								{"device", required_argument, NULL, 'd'},
+								{"daemon", no_argument, NULL, 'b'},
+								{"time_interval", required_argument, NULL, 't'},
+								{"help", no_argument, NULL, 'h'},
+								{NULL, 0, NULL, 0}
+                   	       };
+    
+    while((opt = getopt_long(argc, argv, "d:t:bh", opts, NULL)) != -1)
+	{
+        switch(opt)
+        {
+            case 'd':
+					 memset(dev, 0, sizeof(dev));
+                     strcpy(dev, optarg);
+                     break;
+            case 't':
+                     set_time = atoi(optarg);
+                     break;
+            case 'b':
+                     daemon_run = 1;
+                     break;
+            case 'h':
+                     print_usage(argv[0]);
+                     return 0;
+        }
+    }
+	
+	/* 后台运行程序 */
+    if(daemon_run)
+	{
+		if(daemon(1, 0))
+		{
+			printf("Running daemon failure:%s\n", strerror(errno));
+		}
+	}
 
 	/* 安装信号 */
 	signal(SIGINT, sig_handler);
@@ -77,7 +119,7 @@ int main (int argc, char **argv)
     }
     dbg_print ("comport open successfully!\n");
 
-#if 0
+	//sht20初始化
 	sht20_fd = sht2x_init(I2C_DEV);
 	if (sht20_fd < 0)
 	{
@@ -91,14 +133,13 @@ int main (int argc, char **argv)
 			return -3;
 	}
 
-#endif
 	//LED 初始化
 	if (led_init(&led[LED_RED], 1, 11) < 0)
 	{
 		PARSE_LOG_ERROR ("LED RED initialize error.\n");
 		return -4;
 	}
-
+	
 	//蜂鸣器初始化
 	if ( pwm_init(BEEP_DEV) < 0)
 	{   
@@ -139,9 +180,8 @@ int main (int argc, char **argv)
 		current_time = time(NULL);
 		if ( current_time-pretime >= set_time )
 		{
-			//data[] = "9,02000F000400000010";
+			//data[] = "9,02001B000400000010";
 			//温湿度采样
-#if 0
 			if ( sht2x_sample(sht20_fd, temp_str, rh_str, 20) < 0 )
 			{
 					PARSE_LOG_ERROR ("sht20 sample failure\n");
@@ -150,27 +190,27 @@ int main (int argc, char **argv)
 			}
 			PARSE_LOG_DEBUG ("temp_str:%s\n", temp_str);
 			PARSE_LOG_DEBUG ("rh_str:%s\n", rh_str);
-
-			//上报温度
-			memset(data, 0, sizeof(data));
-			snprintf(data, 22, "9,%s", temp_str);
-#endif
-			rv = atcmd_qlwuldataex(&com, data);
-			if ( rv < 0 )
-			{
-				PARSE_LOG_WARN ("atcmd_qlwuldataex temp_str error!\n");
-				continue;
-			}
-
-#if 0		//上报相对湿度
+			
+			//上报相对湿度
  			memset(data, 0, sizeof(data));
 			snprintf(data, 22, "9,%s", rh_str);
 			rv = atcmd_qlwuldataex(&com, data);
 			if ( rv < 0 )
 			{
 				PARSE_LOG_ERROR ("atcmd_qlwuldataex rh_str error!\n");
-				continue;
+				break;
 			}
+			
+			//上报温度
+			memset(data, 0, sizeof(data));
+			snprintf(data, 22, "9,%s", temp_str);
+			rv = atcmd_qlwuldataex(&com, data);
+			if ( rv < 0 )
+			{
+				PARSE_LOG_ERROR ("atcmd_qlwuldataex temp_str error!\n");
+				break;
+			}
+		
 
 			//烟雾浓度采样
 			if ( mq2_sample(&mq2, sizeof(mq2), smoke_str, sizeof(smoke_str)) < 0 )
@@ -179,20 +219,18 @@ int main (int argc, char **argv)
 				ret = -5;
 				goto CleanUp;
 			}
-
+			
 			//上报烟雾浓度
 			memset(data, 0, sizeof(data));
 			snprintf(data, 22, "9,%s", smoke_str);
 			rv = atcmd_qlwuldataex(&com, data);
 			if ( rv < 0 )
 			{
-				PARSE_LOG_WARN ("atcmd_qlwuldataex smoke_str error!\n");
-				continue;
+				PARSE_LOG_ERROR ("atcmd_qlwuldataex smoke_str error!\n");
+				break;
 			}
-#endif
-            pretime = current_time;
+			pretime = current_time;
         }
-	
 		rv = atcmd_ctrl_recv(&com, ctrl_cmd, sizeof(ctrl_cmd));
 		if ( rv < 0 )
 		{
@@ -207,7 +245,7 @@ int main (int argc, char **argv)
 				PARSE_LOG_WARN ("parse_ctrl error!\n");
 			}
 		}
-    }
+	}
 
 CleanUp:
     comport_close(&com);
@@ -233,3 +271,14 @@ void sig_handler(int signum)
     return ;
 }
 
+void print_usage(char *proname)
+{
+    printf("%s usage :\n",proname );
+    printf("-d(--device): specify BC28 comport device");
+    printf("-b[daemon]: start daemon\n");
+    printf("-t(--time_interval): set data reporting time interval\n");
+    printf("-h(--help): print this help information.\n");
+
+    return ;
+
+}

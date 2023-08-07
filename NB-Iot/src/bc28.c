@@ -666,7 +666,7 @@ int atcmd_qlwuldataex(comport_t *comport, char *data)
 	memset(at, 0, sizeof(at));
 	snprintf(at, sizeof(at), "AT+QLWULDATAEX=%s,0x0100\r\n", data);
 
-	PARSE_LOG_ERROR ("%s\n", at);		//debug
+	PARSE_LOG_INFO ("@%s@\n", at);		//debug
     rv = send_atcmd_check_ok(comport, at, 500); 
     if (rv < 0)
     {   

@@ -23,7 +23,7 @@
 #include "logger.h"
 #include "data_check.h"
 
-#define SMOKE_ID						"000F" //云平台烟雾浓度服务ID
+#define SMOKE_ID						"001B" //云平台烟雾浓度服务ID
 #define SMOKE_LEN						"0004" //云平台烟雾浓度服务数据长度
 
 //需要读取的mq2 采样数据文件绝对路径
@@ -76,20 +76,28 @@ int mq2_sample(adc_dev_t *mq2, int size, char *smoke_str, size_t len)
 {
 	char       adc_buf[30] = {};
 
-	memset(&mq2, 0, size);
+    if( !mq2 )
+    {
+        PARSE_LOG_ERROR("invalid input arugments\n");
+        return -1;
+    }
+
+	memset(mq2, 0, size);
 	if (file_data_read(file_path[IN_VOLTAGE_SCALE], adc_buf, sizeof(adc_buf)) < 0)
 	{
 		PARSE_LOG_ERROR ("Error:Read %s failure.\n", file_path[0]);
-		return -1;
+		return -2;
 	}
+
 	mq2->scale = atof(adc_buf);
 	PARSE_LOG_DEBUG ("Read ADC scale = %f\n", mq2->scale);
 	
 	if(file_data_read(file_path[IN_VOLTAGE1_RAW], adc_buf, sizeof(adc_buf)) < 0)
 	{
 		PARSE_LOG_ERROR ("Error : Read %s failure.\n", file_path[1]);
-		return -2;
+		return -3;
 	}
+	
 	mq2->raw = atoi(adc_buf);//将字符串转换为整型
 	PARSE_LOG_DEBUG ("Read ADC raw = %d\n", mq2->raw);
 	
@@ -101,14 +109,14 @@ int mq2_sample(adc_dev_t *mq2, int size, char *smoke_str, size_t len)
 	if(data_check( &mq2->conc ) < 0)
 	{
 		PARSE_LOG_ERROR ("Abnormal smoke concentration!\n");
-		return -3;
+		return -4;
 	}
 
 	/* 当烟雾浓度超过80%时，自动触发警报 ,点亮LED 灯并打开蜂鸣器*/
 	if ( (int32_t)mq2->conc > 80 )
 	{
 		led_control(&led[LED_RED], ON);
-		pwm_config("enable", "1");
+//		pwm_config("enable", "1");
 	}
 
 	memset(smoke_str, 0, len);
@@ -116,7 +124,5 @@ int mq2_sample(adc_dev_t *mq2, int size, char *smoke_str, size_t len)
 	snprintf(smoke_str, 19, "02%s%s%08X", SMOKE_ID, SMOKE_LEN, (int32_t)mq2->conc);
 	PARSE_LOG_DEBUG ("smoke_str:%s\n", smoke_str);
 				
-	sleep(1);
-	
 	return 0;
 } 

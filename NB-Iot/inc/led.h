@@ -24,11 +24,11 @@ enum
 	LED_MAX,
 };	
 
-/* RGB LED status */
+/* common anode RGB LED status */
 enum
 {
-	OFF=0,
-	ON,
+	ON=0,
+	OFF,
 };	
 
 /* RGB LED struct */
@@ -38,13 +38,13 @@ typedef struct gpiod_led_s
 	struct gpiod_line 	*line;
 }gpiod_led_t;
 
-int led_init(gpiod_led_t *gpiod_led, unsigned char gpio_chip_num, unsigned char gpio_off_num);
+extern int led_init(gpiod_led_t *gpiod_led, unsigned int gpio_chip_num, unsigned int gpio_off_num);
 
-int led_control(gpiod_led_t *gpiod_led, int status);
+extern int led_control(gpiod_led_t *gpiod_led, int status);
 
-void blink_led(gpiod_led_t *gpiod_led, unsigned int interval);
+extern void blink_led(gpiod_led_t *gpiod_led, unsigned int interval);
 
-int led_release(gpiod_led_t *gpiod_led);
+extern int led_release(gpiod_led_t *gpiod_led);
 
 #endif
 

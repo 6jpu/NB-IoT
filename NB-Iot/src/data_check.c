@@ -35,7 +35,7 @@ int data_check(float *smoke)
 	{
 			diff = abs(*smoke - pre_smoke);
 
-			if(diff > 50.0)
+			if(diff > 90.0)
 			{
 					PARSE_LOG_ERROR ("The data is wrong, discard it.\n");
 					return -2;

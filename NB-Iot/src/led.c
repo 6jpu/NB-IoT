@@ -19,7 +19,7 @@
 #include "msleep.h"
 
 
-int led_init(gpiod_led_t *gpiod_led, unsigned char gpio_chip_num, unsigned char gpio_off_num)
+int led_init(gpiod_led_t *gpiod_led, unsigned int gpio_chip_num, unsigned int gpio_off_num)
 {
 	char	dev_name[16];
 
@@ -30,9 +30,9 @@ int led_init(gpiod_led_t *gpiod_led, unsigned char gpio_chip_num, unsigned char 
 	}
 
 	memset(dev_name, 0, sizeof(dev_name));
-	snprintf(dev_name, sizeof(dev_name), "dev/gpiochip%d", gpio_chip_num-1);
+	snprintf(dev_name, sizeof(dev_name), "/dev/gpiochip%d", gpio_chip_num-1);
 
-	if (!(gpiod_led->chip = gpiod_chip_open(dev_name)))
+	if ( !(gpiod_led->chip = gpiod_chip_open(dev_name)) )
 	{
 		PARSE_LOG_ERROR ("Open gpiochip failure\n");
 		return -2;
@@ -43,14 +43,12 @@ int led_init(gpiod_led_t *gpiod_led, unsigned char gpio_chip_num, unsigned char 
 		PARSE_LOG_ERROR ("Get gpio line_led failure\n");
 		return -3;
 	}
-
 	/* 设置初始值为灭 */
 	if (gpiod_line_request_output(gpiod_led->line, "led_out", OFF) < 0)
 	{
 		PARSE_LOG_ERROR ("Request line_led output error\n");
 		return -4;
 	}
-
 	return 0;
 }
 

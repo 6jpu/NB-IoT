@@ -23,9 +23,9 @@
 #include <string.h>
 #include "logger.h"
 
-int pwm_init(char *pwm_dev);
+extern int pwm_init(char *pwm_dev);
 
-int pwm_config(const char *attr, const char *val);
+extern int pwm_config(const char *attr, const char *val);
 
 #endif
 

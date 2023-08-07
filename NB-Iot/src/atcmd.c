@@ -170,6 +170,7 @@ int send_atcmd_check_ok(comport_t *comport, char *at, int timeout)
     }
     else
     {
+		PARSE_LOG_DEBUG("send_atcmd rv = %d\n", rv);
         return -2;
     }
 }

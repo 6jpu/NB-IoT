@@ -49,22 +49,22 @@ int sqlite_create(void)
         PARSE_LOG_INFO ("Opened database successfully.\n");
     }
 
-    memset(create_buf,0,sizeof(create_buf));
-    sprintf(create_buf,"CREATE TABLE %s(ID INTEGER PRIMARY KEY, RH CHAR(50));", table_name);
-    rv = sqlite3_exec(db,create_buf,callback,0,&zErrMsg);
+	memset(create_buf,0,sizeof(create_buf));
+	sprintf(create_buf,"CREATE TABLE IF NOT EXISTS %s(ID INTEGER PRIMARY KEY, RH CHAR(50));", table_name);
+	rv = sqlite3_exec(db,create_buf,callback,0,&zErrMsg);
 
-    if( rv != SQLITE_OK )
-    {
-        PARSE_LOG_ERROR ("failure to create %s: %s\n", table_name,zErrMsg);
-        sqlite3_free(zErrMsg);
-        return -1;
-    }
-    else
-    {
-        PARSE_LOG_INFO ("create %s successfully\n", table_name);
-    }
+	if( rv != SQLITE_OK )
+	{
+		PARSE_LOG_ERROR ("failure to create %s: %s\n", table_name,zErrMsg);
+		sqlite3_free(zErrMsg);
+		return -1;
+	}
+	else
+	{
+		PARSE_LOG_INFO ("create %s successfully\n", table_name);
+	}
 
-    return 0;
+	return 0;
 }
 
 /*向数据库表里面插入数据*/
