@@ -230,6 +230,7 @@ int main (int argc, char **argv)
 				break;
 			}
 			pretime = current_time;
+			sleep(3);
         }
 		rv = atcmd_ctrl_recv(&com, ctrl_cmd, sizeof(ctrl_cmd));
 		if ( rv < 0 )
