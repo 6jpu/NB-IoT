@@ -23,8 +23,6 @@
 #include "logger.h"
 #include "data_check.h"
 
-#define SMOKE_ID						"001B" //云平台烟雾浓度服务ID
-#define SMOKE_LEN						"0004" //云平台烟雾浓度服务数据长度
 
 //需要读取的mq2 采样数据文件绝对路径
 static char *file_path[] = {

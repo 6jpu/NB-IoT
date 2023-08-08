@@ -23,10 +23,6 @@
 #define SOFTRESET						0xFE
 #define TRIGGER_TEMPERATURE_NO_HOLD		0xF3
 #define TRIGGER_HUMIDITY_NO_HOLD		0xF5
-#define TEMP_ID							"0019" //云平台温度服务ID
-#define TEMP_LEN						"0004" //云平台温度服务数据长度
-#define RH_ID							"001A" //云平台湿度服务ID
-#define RH_LEN							"0004" //云平台湿度服务数据长度
 
 
 static inline void dump_buf(const char *prompt, uint8_t *buf, int size);
