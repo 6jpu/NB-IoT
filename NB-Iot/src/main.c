@@ -207,7 +207,7 @@ int main (int argc, char **argv)
 			rv = atcmd_qlwuldataex(&com, data);
 			if ( rv < 0 )
 			{
-				PARSE_LOG_ERROR ("atcmd_qlwuldataex smoke_str error!\n");
+				PARSE_LOG_ERROR ("atcmd_qlwuldataex data error!\n");
 				break;
 			}
 			pretime = current_time;
