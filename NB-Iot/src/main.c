@@ -49,18 +49,18 @@ int main (int argc, char **argv)
     char        dev[20] = "/dev/ttymxc7";	//BC28 默认串口设备
     long        baudrate = 9600;
     char        conf[] = "8N1";
-    char        data[32] = "9,02001B000400000010";
+    char        data[64] = "17,02001B000C0000001C0000001C0000001C";
     char        buf[1024];
 	char        ip[] = "221.229.214.202";
 	char        port[] = "5683";
 	char		ctrl_cmd[32];
     comport_t   com;
 	int			sht20_fd;
-	char		temp_str[20];
-	char		rh_str[20];
+	char		temp_str[10];
+	char		rh_str[10];
 	uint8_t		serialnumber[8];
 	adc_dev_t	mq2;
-	char		smoke_str[20];
+	char		smoke_str[10];
 	time_t		current_time;      //当前时间戳
 	time_t		pretime = 0;       //上次采样时间戳
 	int			set_time = 5;      //设置上报时间间隔，默认为5秒
@@ -174,13 +174,13 @@ int main (int argc, char **argv)
 				PARSE_LOG_WARN ("nbiot_connect_cloud error!\n");
 				continue;
 			}
+			printf ("Sampling!\n");
 		}
 
 		/* 判断是否到了采样时间 */
 		current_time = time(NULL);
 		if ( current_time-pretime >= set_time )
 		{
-			//data[] = "9,02001B000400000010";
 			//温湿度采样
 			if ( sht2x_sample(sht20_fd, temp_str, rh_str, 20) < 0 )
 			{
@@ -191,38 +191,19 @@ int main (int argc, char **argv)
 			PARSE_LOG_DEBUG ("temp_str:%s\n", temp_str);
 			PARSE_LOG_DEBUG ("rh_str:%s\n", rh_str);
 			
-			//上报相对湿度
- 			memset(data, 0, sizeof(data));
-			snprintf(data, 22, "9,%s", rh_str);
-			rv = atcmd_qlwuldataex(&com, data);
-			if ( rv < 0 )
-			{
-				PARSE_LOG_ERROR ("atcmd_qlwuldataex rh_str error!\n");
-				break;
-			}
-			
-			//上报温度
-			memset(data, 0, sizeof(data));
-			snprintf(data, 22, "9,%s", temp_str);
-			rv = atcmd_qlwuldataex(&com, data);
-			if ( rv < 0 )
-			{
-				PARSE_LOG_ERROR ("atcmd_qlwuldataex temp_str error!\n");
-				break;
-			}
-		
-
-			//烟雾浓度采样
+			//烟雾浓度采样并自检
 			if ( mq2_sample(&mq2, sizeof(mq2), smoke_str, sizeof(smoke_str)) < 0 )
 			{
 				PARSE_LOG_ERROR ("smoke_sample error\n");
 				ret = -5;
 				goto CleanUp;
 			}
+			PARSE_LOG_DEBUG ("smoke_str:%s\n", smoke_str);
 			
-			//上报烟雾浓度
+			//上报烟雾浓度和温湿度
+			//data[64] = "17,02001B000C0000001C0000001C0000001C";
 			memset(data, 0, sizeof(data));
-			snprintf(data, 22, "9,%s", smoke_str);
+			snprintf(data, sizeof(data), "17,02001B000C%s%s%s", smoke_str, temp_str, rh_str);
 			rv = atcmd_qlwuldataex(&com, data);
 			if ( rv < 0 )
 			{

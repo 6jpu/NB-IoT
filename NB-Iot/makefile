@@ -1,4 +1,4 @@
-APPNAME=main
+APPNAME=smoke
 
 all:
 	@echo "Start compilation ..."

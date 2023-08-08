@@ -116,12 +116,12 @@ int mq2_sample(adc_dev_t *mq2, int size, char *smoke_str, size_t len)
 	if ( (int32_t)mq2->conc > 80 )
 	{
 		led_control(&led[LED_RED], ON);
-//		pwm_config("enable", "1");
+		pwm_config("enable", "1");
 	}
 
 	memset(smoke_str, 0, len);
-	/*  将烟雾浓度转化为十六进制并转换为相应AT 报文格式 */
-	snprintf(smoke_str, 19, "02%s%s%08X", SMOKE_ID, SMOKE_LEN, (int32_t)mq2->conc);
+	/* 将烟雾浓度转化为十六进制 */
+	snprintf(smoke_str, 9, "%08X", (int32_t)mq2->conc);
 	PARSE_LOG_DEBUG ("smoke_str:%s\n", smoke_str);
 				
 	return 0;
