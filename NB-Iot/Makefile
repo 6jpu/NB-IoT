@@ -7,7 +7,6 @@ all:
 	rm -rf Log/*
 	rz
 	chmod a+x ${APPNAME}
-	./${APPNAME}
 
 init:
 	#BC28 硬件复位
