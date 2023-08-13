@@ -700,8 +700,8 @@ int atcmd_ate(comport_t *comport, int enabled)
 }
 
 /*  设置模块联网模式 
- *  enabled=ENABLE 设置手动联网
- *  enabled=DISABLE 设置自动联网
+ *  enabled=ENABLE 设置自动联网
+ *  enabled=DISABLE 设置手动联网
  *  成功返回0，出错返回负数
  *  */
 int atcmd_nconfig(comport_t *comport, int enabled)
